@@ -6,8 +6,7 @@ This is a simple starter repository with **development (dev)**, **testing (test)
 - `test_space` → staging/testing (promote from dev)
 - `main` → production (protected; final deploys)
 
-# Rezly_DDMS_Rifd_2025Y_01P
-# Rezly DDMS — Rifd Project 2025
+# Rezly DDMS — 1st Rifd Project 2025 ✨
 
 Rezly is a **Data Driven Management System (DDMS)** designed to simplify managment, decision-making, and scaling workflows for modern businesses.  
 This repository provides the official source code, workflows, and automation for Rezly’s platform under the **Rifd 2025 initiative**.
