@@ -1,14 +1,12 @@
 import React from 'react'
-import { Bell, MessageCircle, Settings } from 'lucide-react'
 import BellIcon from '../assets/icon/bell.svg'
 import MessageIcon from '../assets/icon/message.svg'
 import Notification from '../assets/icon/notification-on.svg'
-
 export default function Topbar() {
   return (
     <header className="w-full flex items-center justify-between bg-[#F8F9FA] px-6 py-2 ">
 
-<h2 className="font-cairo text-lg sm:text-xl font-semibold text-gray-800">
+     <h2 className="font-cairo font-bold text-lg sm:text-xl text-gray-800">
         مرحباً بك في لوحة التحكم، نتمنى لك يوماً مثمراً!
       </h2>
       <div className="flex items-center gap-4">

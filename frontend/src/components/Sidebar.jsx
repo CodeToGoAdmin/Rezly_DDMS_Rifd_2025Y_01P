@@ -5,6 +5,7 @@ import Employeeside from '../assets/icon/employeeside.svg'
 import WalletSide from '../assets/icon/walletSide.svg'
 import Booking from '../assets/icon/booking.svg'
 import Logout from '../assets/icon/logoutsidbar.svg'
+import Logo from '../assets/icon/rezly-logo.png'
 
 
 export default function Sidebar() {
@@ -12,8 +13,11 @@ export default function Sidebar() {
     <div className="min-h-screen bg-[#F8F9FA] flex">
       <aside className="w-64 bg-[#F8F9FA] p-5 flex flex-col h-screen">
 
-        <nav className="flex-1 pt-8 mt-8 ">
-          <ul className="space-y-4">
+        <nav className="flex-1  ">
+          <div className="logo  p-1">
+            <img src={Logo} alt='rezly logo ' className='w-30 h-13 m-auto  '/>
+          </div>
+          <ul className="space-y-4 mt-3">
 
             <li>
               <button
