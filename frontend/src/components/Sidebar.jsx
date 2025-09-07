@@ -1,5 +1,11 @@
 import React from 'react'
-import { Home, BarChart3, Users, Wallet, LogOut } from 'lucide-react'
+import Homesidebar from '../assets/icon/homesidebar.svg'
+import Employeeside from '../assets/icon/employeeside.svg'
+
+import WalletSide from '../assets/icon/walletSide.svg'
+import Booking from '../assets/icon/booking.svg'
+import Logout from '../assets/icon/logoutsidbar.svg'
+
 
 export default function Sidebar() {
   return (
@@ -19,7 +25,7 @@ export default function Sidebar() {
                   className="w-8 h-8 rounded-full flex items-center justify-center 
                  bg-[#6A0EAD] text-white"
                 >
-                  <Home className="w-4 h-4" />
+                  <img src={Homesidebar} className="w-7 h-6" />
                 </div>
                 <span>الصفحة الرئيسية</span>
               </button>
@@ -31,7 +37,7 @@ export default function Sidebar() {
                                  text-[#7E818C] hover:text-black hover:bg-white border-none transition">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center 
                                 bg-[#6A0EAD] text-white">
-                  <BarChart3 className="w-4 h-4" />
+                  <img src={Booking} className="w-7 h-6" />
                 </div>
                 <span>الحجوزات</span>
               </button>
@@ -42,7 +48,7 @@ export default function Sidebar() {
                                  text-[#7E818C] hover:text-black hover:bg-white border-none transition">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center 
                                 bg-[#6A0EAD] text-white">
-                  <Users className="w-4 h-4" />
+                  <img src={Employeeside} className="w-7 h-6" />
                 </div>
                 <span>الموارد البشرية</span>
               </button>
@@ -53,7 +59,7 @@ export default function Sidebar() {
                                  text-[#7E818C] hover:text-black hover:bg-white border-none transition">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center 
                                 bg-[#6A0EAD] text-white">
-                  <Wallet className="w-4 h-4" />
+                  <img src={WalletSide} className="w-7 h-6" />
                 </div>
                 <span>المالية</span>
               </button>
@@ -66,7 +72,7 @@ export default function Sidebar() {
                              text-[#7E818C] hover:text-black hover:bg-white border-none transition">
             <div className="w-8 h-8 rounded-full flex items-center justify-center 
                             bg-[#6A0EAD] text-white">
-              <LogOut className="w-4 h-4" />
+                  <img src={Logout} className="w-7 h-6" />
             </div>
             <span>تسجيل الخروج</span>
           </button>
