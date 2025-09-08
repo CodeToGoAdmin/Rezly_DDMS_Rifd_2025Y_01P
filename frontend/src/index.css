@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+body{
+  background-color: #F8F9FA;
+}
+button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: #F8F9FA;
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #6A0EAD;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #6A0EAD;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+
+}
+button:hover {
+  background-color: white;
+}
+
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #6A0EAD;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #6A0EAD;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+/*chart css*/
+        .filter-btn {
+          padding: 6px 10px;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          background: #f9f9f9;
+          cursor: pointer;
+               align-items: center;
+          display: flex;
+          justify-content: center;
+        }
+        .filter-select {
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          background: #f9f9f9;
+          cursor: pointer;
+          width: 100px;
+          height:32px;
+      
+        }
+        .tab-btn {
+          
+          border: 1px solid #6A0EAD;
+          border-radius: 8px;
+          background: #fff;
+          color: black;
+          cursor: pointer;
+          font-weight: bold;
+           width: 80px;
+          height:32px;
+          align-items: center;
+          display: flex;
+          justify-content: center;
+        }
+        .tab-btn.active {
+          background: #6A0EAD;
+          color: #fff;
+        }
+        .filter{
+          width: 208px;
+          height: 32px;
+        }
+        .filter-btn2{
+          width: 32px;
+          height: 32px;
+
+        }
