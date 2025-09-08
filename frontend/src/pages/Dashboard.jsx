@@ -1,6 +1,7 @@
 import React from 'react'
 import Sidebar from '../components/Sidebar'
 import Topbar from '../components/Topbar'
+import Chart from '../components/Chart'
 
 export default function Dashboard() {
   return (
@@ -9,8 +10,14 @@ export default function Dashboard() {
       <div className="flex flex-1">
         <Sidebar className="w-64 bg-white  " />
 
-        <div className="flex-1 p-6 bg-[#F8F9FA]">
-                <Topbar />
+        <div className="flex-1 pt-6 bg-[#F8F9FA]">
+          <Topbar />
+          <div className="left-section flex">
+            <div className="chart">
+              <Chart/>
+            </div>
+
+          </div>
 
         </div>
       </div>
