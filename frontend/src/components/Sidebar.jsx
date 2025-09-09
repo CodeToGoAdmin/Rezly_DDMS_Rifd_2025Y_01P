@@ -13,6 +13,8 @@ export default function Sidebar() {
     <div className="min-h-screen bg-[#F8F9FA] flex">
       <aside className="w-64 bg-[#F8F9FA] py-5 flex flex-col h-screen">
 
+      <aside className="w-64 bg-[#F8F9FA] p-5 flex flex-col h-screen">
+
         <nav className="flex-1  ">
           <div className="logo  p-1">
             <img src={Logo} alt='rezly logo ' className='w-30 h-13 m-auto  '/>

@@ -44,6 +44,7 @@ export default function Dashboard() {
           {/* جدول الحضور */}
           <div className="bg-white rounded-2xl shadow p-4 w-full max-w-[480px]">
             <AttendanceTable />
+
           </div>
 
         </div>
