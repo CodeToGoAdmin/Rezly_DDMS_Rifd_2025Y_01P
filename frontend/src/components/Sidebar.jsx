@@ -11,7 +11,7 @@ import Logo from '../assets/icon/rezly-logo.png'
 export default function Sidebar() {
   return (
     <div className="min-h-screen bg-[#F8F9FA] flex">
-      <aside className="w-64 bg-[#F8F9FA] p-5 flex flex-col h-screen">
+      <aside className="w-64 bg-[#F8F9FA] py-5 flex flex-col h-screen">
 
         <nav className="flex-1  ">
           <div className="logo  p-1">

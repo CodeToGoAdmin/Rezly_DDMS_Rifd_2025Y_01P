@@ -104,7 +104,7 @@ export default function Chart() {
             <Line
               type="monotone"
               dataKey="value"
-              stroke="#7c3aed"
+              stroke="#6A0EAD"
               strokeWidth={3}
               dot
             />
@@ -118,7 +118,7 @@ export default function Chart() {
             />
             <YAxis hide />
             <Tooltip />
-            <Bar dataKey="value" fill="#7c3aed" barSize={30} radius={[6, 6, 0, 0]} />
+            <Bar dataKey="value" fill="#6A0EAD" barSize={30} radius={[6, 6, 0, 0]} />
           </BarChart>
         )}
       </ResponsiveContainer>
