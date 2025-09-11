@@ -1,6 +1,18 @@
 import express from 'express';
-const app=express()
-const port = 3000
+import connectDB from './DB/connection.js'; // استدعاء ملف الاتصال
+import Booking from './src/routers/bookingRoutes.js';
+const app = express();
+const PORT = process.env.PORT || 3000;
+import initApp from './src/initApp.js';
+import 'dotenv/config';
 
-app.get('/',(req,res)=>res.send("hello world"))
-app.listen(port, ()=>console.log(`example all listening on port ${port}!`))
+connectDB(); // الاتصال بالداتا بيس
+
+initApp(app,express);
+app.use(express.json());
+app.use('/booking', Booking );
+app.get('/', (req, res) => {
+  res.send('Hello world! Server is running');
+});
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
