@@ -1,0 +1,124 @@
+/* ---------- إعدادات عامة react-datepicker ---------- */
+.react-datepicker {
+  border: none !important;
+  box-shadow: none !important;
+  font-family: 'Cairo', sans-serif;
+  font-weight: 600;
+  width: 100%;
+  direction: rtl;
+}
+
+.react-datepicker__header {
+  background-color: white !important;
+  border-bottom: none !important;
+  font-weight: 600;
+}
+
+.react-datepicker__current-month {
+  color: black !important;
+  font-weight: bold;
+}
+
+.react-datepicker__navigation {
+  color: black !important;
+  background-color: transparent !important;
+}
+
+.react-datepicker__day-names,
+.react-datepicker__week {
+  display: flex !important;
+  justify-content: space-between !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+.react-datepicker__day-names {
+  direction: rtl !important;
+}
+.react-datepicker__week {
+  direction: ltr !important;
+
+}
+.react-datepicker__day {
+  color: #6B7280 !important;
+}
+
+.react-datepicker__day--selected {
+  background-color: #6A0EAD !important;
+  color: white !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.react-datepicker__month-container,
+.react-datepicker__month,
+.react-datepicker__header {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
+}
+
+.react-datepicker__month {
+  height: 213px !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: space-between !important;
+}
+
+.react-datepicker__day,
+.react-datepicker__day--selected {
+  width: 38px !important;
+  height: 38px !important;
+}
+
+/* ---------- التعديلات الجديدة للقياسات ---------- */
+/* الحاوية الرئيسية للكاليندر داخل الديف */
+.calendar-inside,
+.mini-calendar-card .react-datepicker__month-container,
+.mini-calendar-card .react-datepicker__month,
+.mini-calendar-card .react-datepicker__header {
+  width: 100% !important; /* تمتد على كامل عرض الديف الداخلي */
+  box-sizing: border-box;  /* حساب padding والحدود ضمن القياس */
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+
+.mini-calendar-card .react-datepicker__triangle {
+  display: none;
+}
+
+.mini-calendar-card .react-datepicker__day--selected {
+  background-color: #6A0EAD !important;
+  color: #fff !important;
+  border-radius: 12px !important;
+  width: 38px !important;
+  height: 38px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.mini-calendar-card .react-datepicker__day {
+  width: 38px !important;
+  height: 38px !important;
+  margin: 0 !important;
+}
+
+/* الكاليندر نفسه */
+.mini-calendar-card .react-datepicker__month {
+  height: 213px !important; /* ارتفاع الكاليندر حسب الفيجما */
+  display: flex !important;
+  flex-wrap: wrap !important; /* يضمن أن كل الأيام تتوزع بشكل كامل */
+  justify-content: space-between !important; /* توزيع الأيام على كامل العرض */
+}
+/* الهيدر */
+.mini-calendar-card .react-datepicker__header {
+  height: 32px !important; /* ارتفاع الهيدر حسب الفيجما */
+}
+
+

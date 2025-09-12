@@ -1,0 +1,64 @@
+.fc-theme-standard td,
+.fc-theme-standard th,
+.fc-theme-standard .fc-scrollgrid {
+  background-color: #fff !important;
+  border-color: #eee !important;
+}
+
+.fc-theme-standard .fc-scroller {
+  overflow: hidden !important;
+}
+
+.grid-cols-\[50px_1fr\] > div:first-child { background-color: #fff; }
+.grid-cols-\[50px_1fr\] > div:last-child { display: flex; align-items: center; justify-content: space-between; background-color: white; }
+
+.fc .fc-timegrid-axis { border: none !important; background: transparent !important; text-align: right; padding-right: 8px; }
+.fc .fc-timegrid-axis .fc-scrollgrid-section-liquid,
+.fc .fc-timegrid-axis .fc-timegrid-slot-frame,
+.fc .fc-timegrid-axis .fc-scrollgrid-section > * { border: none !important; box-shadow: none !important; background: transparent !important; }
+
+.fc-direction-rtl .fc-timegrid-slot-label { border: none !important; background: transparent !important; box-shadow: none !important; }
+.fc .fc-timegrid-slot-label-frame { background: transparent !important; }
+.fc .fc-timegrid-slot-label { font-weight: 600; color: #374151; }
+.fc .fc-timegrid-slot { height: 64px !important; }
+
+.fc .fc-timegrid-event,
+.fc .fc-event {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  position: relative;
+  z-index: 1 !important;
+  margin:12px;
+}
+
+
+.fc .fc-scroller-liquid-absolute { min-height: 0 !important; }
+.fc-col-header { display: none !important; }
+
+
+/* الغاء الحد الأيمن لكل الأعمدة الأخيرة في FullCalendar */
+.fc-theme-standard .fc-scrollgrid-section > *:last-child {
+  border-right: none !important;
+}
+
+/* للـ dayGrid */
+.fc-theme-standard .fc-daygrid-day:last-child {
+  border-right: none !important;
+}
+
+/* للـ timeGrid */
+.fc-theme-standard .fc-timegrid-col:last-child {
+  border-right: none !important;
+}
+
+/* نتحكم بالحدث نفسه */
+.fc-timegrid-event {
+  width: 138px !important;
+  height: 36px !important;
+  display: inline-block;        /* يسمح بالاصطفاف بجانب بعض */
+  margin-left: 12px;            /* المسافة بين الأحداث */
+  overflow: hidden;
+  border-radius: 6px;
+}
+

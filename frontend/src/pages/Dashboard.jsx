@@ -4,6 +4,7 @@ import Topbar from '../components/Topbar'
 import Chart from '../components/Chart'
 import AttendanceTable from '../components/AttendanceTable/AttendanceTable'
 import StatCard from '../components/StatCard'
+import Calender2 from "../components/Calender/Calender2"
 
 import Icon1 from '../assets/icon/card-icon1.svg'
 import Icon2 from '../assets/icon/card-icon2.svg'
@@ -25,26 +26,37 @@ export default function Dashboard() {
           <Topbar />
         </div>
 
-        {/* محتوى العمود الرئيسي */}
-        <div className="flex-1 flex flex-col gap-6 ">
+        {/* محتوى الصفحة مقسم لنصين */}
+        <div className="flex-1 flex gap-6">
 
-          {/* الكروت */}
-          <div className="grid grid-cols-2 gap-4 w-full max-w-[480px]">
-            <StatCard value="60" icon={Icon1} title="إشغال المكان" bgColor="#9333EA" />
-            <StatCard value="$440" icon={Icon2} title="إيرادات اليوم" bgColor="#22C55E" />
-            <StatCard value="23" icon={Icon3} title="اشتراكات اليوم" bgColor="#3B82F6" />
-            <StatCard value="15" icon={Icon4} title="زوار الموقع الآن" bgColor="#FACC15" />
+          {/* القسم الأيسر - الكروت + الشارت + جدول الحضور */}
+          <div className="w-2/5 flex flex-col gap-6">
+
+            {/* الكروت */}
+            <div className="grid grid-cols-2 gap-4 w-full max-w-full">
+              <StatCard value="60" icon={Icon1} title="إشغال المكان" bgColor="#9333EA" />
+              <StatCard value="$440" icon={Icon2} title="إيرادات اليوم" bgColor="#22C55E" />
+              <StatCard value="23" icon={Icon3} title="اشتراكات اليوم" bgColor="#3B82F6" />
+              <StatCard value="15" icon={Icon4} title="زوار الموقع الآن" bgColor="#FACC15" />
+            </div>
+
+            {/* الشارت */}
+            <div className="bg-white rounded-2xl shadow p-4 w-full">
+              <Chart />
+            </div>
+
+            {/* جدول الحضور */}
+            <div className="bg-white rounded-2xl shadow p-4 w-full">
+              <AttendanceTable />
+            </div>
+
           </div>
 
-          {/* الشارت */}
-          <div className="bg-white rounded-2xl shadow p-4  w-full max-w-[480px]">
-            <Chart />
-          </div>
-
-          {/* جدول الحضور */}
-          <div className="bg-white rounded-2xl shadow p-4 w-full max-w-[480px]">
-            <AttendanceTable />
-
+          {/* القسم الأيمن - الكاليندر */}
+          <div className="w-3/5">
+            <div className="bg-white rounded-2xl shadow p-4 h-full">
+              <Calender2 />
+            </div>
           </div>
 
         </div>
