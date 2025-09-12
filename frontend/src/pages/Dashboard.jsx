@@ -34,10 +34,30 @@ export default function Dashboard() {
 
             {/* الكروت */}
             <div className="grid grid-cols-2 gap-4 w-full max-w-full">
-              <StatCard value="60" icon={Icon1} title="إشغال المكان" bgColor="#9333EA" />
-              <StatCard value="$440" icon={Icon2} title="إيرادات اليوم" bgColor="#22C55E" />
-              <StatCard value="23" icon={Icon3} title="اشتراكات اليوم" bgColor="#3B82F6" />
-              <StatCard value="15" icon={Icon4} title="زوار الموقع الآن" bgColor="#FACC15" />
+              <StatCard 
+                value={<span className="text-black text-[28px] font-cairo font-bold tracking-[1px] break-words">60</span>} 
+                icon={Icon1} 
+                title={<span className="text-black text-[12px] font-cairo font-bold leading-[18px] break-words">إشغال المكان</span>} 
+                bgColor="#9333EA" 
+              />
+              <StatCard 
+                value={<span className="text-black text-[28px] font-cairo font-bold tracking-[1px] break-words">$440</span>} 
+                icon={Icon2} 
+                title={<span className="text-black text-[12px] font-cairo font-bold leading-[18px] break-words">إيرادات اليوم</span>} 
+                bgColor="#22C55E" 
+              />
+              <StatCard 
+                value={<span className="text-black text-[28px] font-cairo font-bold tracking-[1px] break-words">23</span>} 
+                icon={Icon3} 
+                title={<span className="text-black text-[12px] font-cairo font-bold leading-[18px] break-words">اشتراكات اليوم</span>} 
+                bgColor="#3B82F6" 
+              />
+              <StatCard 
+                value={<span className="text-black text-[28px] font-cairo font-bold tracking-[1px] break-words">15</span>} 
+                icon={Icon4} 
+                title={<span className="text-black text-[12px] font-cairo font-bold leading-[18px] break-words">زوار الموقع الآن</span>} 
+                bgColor="#FACC15" 
+              />
             </div>
 
             {/* الشارت */}
