@@ -32,10 +32,8 @@ export const auth = (allowedRoles = []) => {
       let decoded;
 
       try {
-        // ===== تحقق من Access Token =====
         decoded = jwt.verify(token, process.env.LOGINTOKEN);
       } catch {
-        // ===== Access Token انتهى أو غير صالح =====
         const userId = jwt.decode(token)?.id;
         if (!userId) {
           return res.status(401).json({
@@ -55,7 +53,6 @@ export const auth = (allowedRoles = []) => {
         }
 
         try {
-          // ===== تحقق من Refresh Token =====
           jwt.verify(user.refreshToken, process.env.REFRESHTOKEN_SECRET);
           const newAccessToken = jwt.sign(
             { id: user._id, role: user.role },
@@ -86,7 +83,6 @@ export const auth = (allowedRoles = []) => {
       req.user = user;
       req.userId = decoded.id;
 
-      // ===== تحقق من الدور =====
       if (allowedRoles.length && !allowedRoles.includes(user.role.toLowerCase())) {
         return res.status(403).json({
           status: "error",
