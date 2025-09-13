@@ -12,68 +12,76 @@ import Icon3 from '../assets/icon/card-icon3.svg'
 import Icon4 from '../assets/icon/card-icon4.svg'
 
 export default function Dashboard() {
+
+  // ملاحظة: أزلنا w-[216px] وحطينا w-full
+  const cardProps = "flex flex-col items-start gap-2 h-[126px] p-[24px_16px] w-full"
+
   return (
-    <div className="w-screen min-h-screen flex bg-[#F8F9FA]">
+    <div className="w-screen min-h-screen flex bg-[#F8F9FA] font-[Cairo]">
 
       {/* Sidebar */}
       <Sidebar className="w-64 bg-white" />
 
-      {/* العمود الرئيسي */}
+      {/* Main content */}
       <div className="flex-1 flex flex-col pt-6 gap-6">
 
-        {/* Topbar يأخذ كل العرض المتبقي */}
+        {/* Topbar */}
         <div className="w-full">
           <Topbar />
         </div>
 
-        {/* محتوى الصفحة مقسم لنصين */}
+        {/* Page content */}
         <div className="flex-1 flex gap-6">
 
-          {/* القسم الأيسر - الكروت + الشارت + جدول الحضور */}
-          <div className="w-2/5 flex flex-col gap-6">
+          {/* Left section: cards + chart + table */}
+          <div className="max-w-[720px] w-full flex flex-col gap-6 mx-auto">
 
-            {/* الكروت */}
-            <div className="grid grid-cols-2 gap-4 w-full max-w-full">
+            {/* Cards Grid */}
+            <div className="grid grid-cols-2 gap-4 w-full">
               <StatCard 
-                value={<span className="text-black text-[28px] font-cairo font-bold tracking-[1px] break-words">60</span>} 
+                value={<span className="text-black font-cairo text-[28px] font-bold leading-normal tracking-[1px] break-words">60</span>} 
                 icon={Icon1} 
-                title={<span className="text-black text-[12px] font-cairo font-bold leading-[18px] break-words">إشغال المكان</span>} 
+                title={<span className="text-black text-right font-cairo text-[12px] font-bold leading-[18px] break-words">إشغال المكان</span>} 
+                className={cardProps} 
                 bgColor="#9333EA" 
               />
               <StatCard 
-                value={<span className="text-black text-[28px] font-cairo font-bold tracking-[1px] break-words">$440</span>} 
+                value={<span className="text-black font-cairo text-[28px] font-bold leading-normal tracking-[1px] break-words">$440</span>} 
                 icon={Icon2} 
-                title={<span className="text-black text-[12px] font-cairo font-bold leading-[18px] break-words">إيرادات اليوم</span>} 
+                title={<span className="text-black text-right font-cairo text-[12px] font-bold leading-[18px] break-words">إيرادات اليوم</span>} 
+                className={cardProps} 
                 bgColor="#22C55E" 
               />
               <StatCard 
-                value={<span className="text-black text-[28px] font-cairo font-bold tracking-[1px] break-words">23</span>} 
+                value={<span className="text-black font-cairo text-[28px] font-bold leading-normal tracking-[1px] break-words">23</span>} 
                 icon={Icon3} 
-                title={<span className="text-black text-[12px] font-cairo font-bold leading-[18px] break-words">اشتراكات اليوم</span>} 
+                title={<span className="text-black text-right font-cairo text-[12px] font-bold leading-[18px] break-words">اشتراكات اليوم</span>} 
+                className={cardProps} 
                 bgColor="#3B82F6" 
               />
               <StatCard 
-                value={<span className="text-black text-[28px] font-cairo font-bold tracking-[1px] break-words">15</span>} 
+                value={<span className="text-black font-cairo text-[28px] font-bold leading-normal tracking-[1px] break-words">15</span>} 
                 icon={Icon4} 
-                title={<span className="text-black text-[12px] font-cairo font-bold leading-[18px] break-words">زوار الموقع الآن</span>} 
+                title={<span className="text-black text-right font-cairo text-[12px] font-bold leading-[18px] break-words">زوار الموقع الآن</span>} 
+                className={cardProps} 
                 bgColor="#FACC15" 
               />
             </div>
 
-            {/* الشارت */}
+            {/* Chart */}
             <div className="bg-white rounded-2xl shadow p-4 w-full">
               <Chart />
             </div>
 
-            {/* جدول الحضور */}
+            {/* Attendance Table */}
             <div className="bg-white rounded-2xl shadow p-4 w-full">
               <AttendanceTable />
             </div>
 
           </div>
 
-          {/* القسم الأيمن - الكاليندر */}
-          <div className="w-3/5">
+          {/* Right section - Calendar */}
+          <div className="flex-1 pr-6">
             <div className="bg-white rounded-2xl shadow p-4 h-full">
               <Calender2 />
             </div>

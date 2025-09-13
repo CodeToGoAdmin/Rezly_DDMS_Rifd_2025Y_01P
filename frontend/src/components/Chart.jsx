@@ -29,6 +29,16 @@ export default function Chart() {
     setChartType(chartType === "line" ? "bar" : "line");
   };
 
+  const buttonTextStyle = {
+    color: "var(--black, #000)",
+    textAlign: "center",
+    fontFamily: "Cairo",
+    fontSize: "14px",
+    fontStyle: "normal",
+    fontWeight: 600,
+    lineHeight: "150%", // 21px
+  };
+
   return (
     <section
       style={{
@@ -45,34 +55,44 @@ export default function Chart() {
           justifyContent: "space-between",
         }}
       >
+        {/* أزرار الزوار والمبيعات */}
         <div
           className="btn-box mb-3"
           style={{
             display: "flex",
             gap: "10px",
             alignItems: "center",
-            justifyContent: "space-between",
           }}
         >
-          <button className="tab-btn active">الزوار</button>
-          <button className="tab-btn">المبيعات</button>
+          <button className="tab-btn active" style={buttonTextStyle}>الزوار</button>
+
+          {/* المبيعات وبوتون الأسبوع داخل flex لعمل الفراغ بينهم */}
+          <div style={{
+            display: "flex",
+            padding: "0 16px",
+            justifyContent: "space-between",
+            alignItems: "center",
+            alignSelf: "stretch",
+            gap: "50px"
+          }}>
+            <button className="tab-btn" style={buttonTextStyle}>المبيعات</button>
+            <select className="filter-select" style={buttonTextStyle}>
+              <option>اليوم</option>
+              <option selected>الأسبوع</option>
+              <option>الشهر</option>
+            </select>
+          </div>
         </div>
 
+        {/* أيقونة التاريخ وبقية الفلاتر */}
         <div
           className="filter mb-3"
           style={{
             display: "flex",
             gap: "10px",
             alignItems: "center",
-            justifyContent: "space-between",
           }}
         >
-          <select className="filter-select">
-            <option>اليوم</option>
-            <option selected>الأسبوع</option>
-            <option>الشهر</option>
-          </select>
-
           <button className="filter-btn" onClick={toggleChartType}>
             <img src={Charticon} alt="chart icon date" />
             <svg
