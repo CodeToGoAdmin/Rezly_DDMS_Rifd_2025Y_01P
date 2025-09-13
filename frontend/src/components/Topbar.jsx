@@ -13,14 +13,14 @@ export default function Topbar() {
       <div className="flex items-center gap-4">
         <div className="relative">
           <img src={MessageIcon} alt="bell" className="w-6 h-6" />
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1 rounded-full">
+          <span className="absolute -top-1  bg-red-500 text-white text-[10px] px-1 rounded-full">
             4
           </span>
 
         </div>
         <div className="relative">
           <img src={Notification} alt="notification icon" className="w-6 h-6" />
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1 rounded-full">
+          <span className="absolute -top-1 -right-0 bg-red-500 text-white text-[10px] px-1 rounded-full">
             4
           </span>
 
