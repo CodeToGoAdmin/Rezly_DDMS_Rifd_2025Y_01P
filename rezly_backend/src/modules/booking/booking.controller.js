@@ -323,26 +323,36 @@ console.log(query);
 
 export const calendarView = async (req, res) => {
   try {
-    const bookings = await Booking.find().select("date timeStart timeEnd").lean();
+    const filter = {};
+
+    // إذا المستخدم دوره "trainer" رجّع حجوزاته فقط
+    if (req.user.role?.toLowerCase() === "trainer") {
+      filter.trainer = req.user._id;
+    }
+console.log(filter);
+    const bookings = await Booking.find(filter)
+      .select("date timeStart timeEnd trainer")
+      .lean();
 
     const calendarEvents = bookings.map(b => ({
       start: `${b.date.toISOString().split('T')[0]}T${b.timeStart}`,
       end: `${b.date.toISOString().split('T')[0]}T${b.timeEnd}`,
-      date: b.date.toISOString().split('T')[0]
+      date: b.date.toISOString().split('T')[0],
+      trainerId: b.trainer, // ممكن تحتاجه بالفرونت
     }));
 
     res.json({
       status: "success",
       data: calendarEvents,
-      message: "Calendar bookings fetched successfully"
+      message: "Calendar bookings fetched successfully",
     });
 
   } catch (err) {
-    console.error('Calendar fetch error:', err);
+    console.error("Calendar fetch error:", err);
     res.status(500).json({
       status: "error",
       message: "Failed to fetch calendar bookings",
-      error: err.message
+      error: err.message,
     });
   }
 };
