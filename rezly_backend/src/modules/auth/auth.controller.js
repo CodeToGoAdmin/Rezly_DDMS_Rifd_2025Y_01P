@@ -87,21 +87,20 @@ export const confirmEmail = async (req, res, next) => {
 export const SignIn = async (req, res, next) => {
     try {
         const { email, password } = req.body;
+if (!password) return next(new AppError("Password is required", 400));
 
-        // جلب بيانات المستخدم مع الحقول الضرورية فقط، وlean لتقليل overhead
         const user = await userModel.findOne({ email })
-            .select("+password refreshToken role _id")
+            .select("password refreshToken role _id confirmEmail")
             .lean();
         
         if (!user) return next(new AppError('Email not found', 404));
 
-        // check if the user confirmed his email
         if (!user.confirmEmail) {
             return next(new AppError('Please confirm your email', 409)); // 409 Conflict
         }
 
-        // تحقق من كلمة المرور
         const match = await bcrypt.compare(password, user.password);
+       
         if (!match) {
             return next(new AppError('Invalid password', 401));
         }
