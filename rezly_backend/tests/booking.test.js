@@ -2,9 +2,9 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import jwt from 'jsonwebtoken'; // ✅ استيراد jwt
-import app from './index.js'; // ملف express الرئيسي
-import Booking from './DB/models/booking.model.js';
-import User from './DB/models/user.model.js';
+import app from '../index.js'; // ملف express الرئيسي
+import Booking from '../DB/models/booking.model.js';
+import User from '../DB/models/user.model.js';
 
 let mongoServer;
 jest.setTimeout(20000); // 20 ثانية لجميع الاختبارات

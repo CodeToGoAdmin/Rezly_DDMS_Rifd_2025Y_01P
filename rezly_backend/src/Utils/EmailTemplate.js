@@ -101,11 +101,7 @@ export const Emailtemplate = (email, username, token) => {
 
             <div class="button-container">
 
-
-            
-
-
-                <a href='https://project.onrender.com/auth/confirmEmail/${token}' class="button">تأكيد البريد الإلكتروني</a>
+            <a href='https://rezly-ddms-rifd-2025y-01p.onrender.com/auth/confirmEmail/${token}' class="button">تأكيد البريد الإلكتروني</a>
             </div>
 
             

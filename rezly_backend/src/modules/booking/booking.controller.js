@@ -1,8 +1,8 @@
-import Booking from '../../DB/models/booking.model.js';
-import BookingMember from '../../DB/models/bookingMembers.model.js';
-import userModel from '../../DB/models/user.model.js'
+import Booking from '../../../DB/models/booking.model.js';
+import BookingMember from '../../../DB/models/bookingMembers.model.js';
+import userModel from '../../../DB/models/user.model.js'
 import mongoose from 'mongoose';
-import { AppError } from '../Utils/catchError.js';
+import { AppError } from '../../Utils/catchError.js';
 
 
 export const getBookings = async (req, res, next) => {

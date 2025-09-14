@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { AppError } from '../../AppError.js';
+
 import userModel from '../../DB/models/user.model.js';
 
 export const roles = {

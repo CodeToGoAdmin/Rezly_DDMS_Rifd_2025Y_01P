@@ -2,7 +2,7 @@
 import connectDB from "../DB/connection.js";
 import cors from 'cors';
 import authRouter from "./modules/auth/auth.router.js"
-
+import BookingRouter from "./modules/booking/booking.router.js"
 
 const initApp = (app,express)=>{
     connectDB();
@@ -13,6 +13,8 @@ const initApp = (app,express)=>{
       }));
     app.use(express.json());
     app.use('/auth',authRouter);
+app.use('/booking', BookingRouter );
+
 
 }
 

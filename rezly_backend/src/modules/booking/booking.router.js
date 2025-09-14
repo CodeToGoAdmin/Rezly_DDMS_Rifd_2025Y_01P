@@ -1,9 +1,9 @@
 import express from 'express';
-import { getBookings, createBooking, deleteBooking, updateBooking, filterBookings, getBookingDetails, calendarView} from '../controllers/booking.controller.js';
-import { auth, roles } from '../Middleware/auth.js';
-import { createBookingSchema, updateBookingSchema, validateObjectId } from '../modules/auth/booking.validation.js';
-import { validateBody } from '../Middleware/validation.js';
-import Booking from '../../DB/models/booking.model.js';
+import { getBookings, createBooking, deleteBooking, updateBooking, filterBookings, getBookingDetails, calendarView} from './booking.controller.js';
+import { auth, roles } from '../../Middleware/auth.js';
+import { createBookingSchema, updateBookingSchema, validateObjectId } from './booking.validation.js';
+import { validateBody } from '../../Middleware/validation.js';
+import Booking from '../../../DB/models/booking.model.js';
 
 const router = express.Router();
 

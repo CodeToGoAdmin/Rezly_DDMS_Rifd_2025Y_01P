@@ -29,13 +29,13 @@ export const SignUp = async (req, res, next) => {
         refreshToken
     });
 
-     //   const token= jwt.sign({email},process.env.CONFIRMEMAILTOKEN);
-     //   const confirmLink = `https://project.onrender.com/auth/confirmEmail/${token}`;
+       const token= jwt.sign({email},process.env.CONFIRMEMAILTOKEN);
+       const confirmLink = `https://rezly-ddms-rifd-2025y-01p.onrender.com/auth/confirmEmail/${token}`;
 
-//console.log("Confirm link:", confirmLink); // اختبر بالكونسول
-     //   await sendEmail(email,`confirm email from Booking `,userName,token)
+console.log("Confirm link:", confirmLink); // اختبر بالكونسول
+       await sendEmail(email,`confirm email from Booking `,userName,token)
 
-        //console.log("User created with refresh token:", newUser.refreshToken);
+        console.log("User created with refresh token:", newUser.refreshToken);
     return res.status(201).json({
         message: "success",
         user: newUser,
@@ -43,26 +43,26 @@ export const SignUp = async (req, res, next) => {
     });
 };
 
-// confirmEmail function :future need the url to the log in page if needed
-// export const confirmEmail = async (req, res) => {
-//   try {
-//     const { token } = req.params;
-//     const decoded = jwt.verify(token, process.env.CONFIRMEMAILTOKEN);
+//confirmEmail function :future need the url to the log in page if needed
+export const confirmEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const decoded = jwt.verify(token, process.env.CONFIRMEMAILTOKEN);
 
-//     // Update the user's email confirmation status in the database
-//     await userModel.findOneAndUpdate(
-//       { email: decoded.email },
-//       { confirmEmail: true }
-//     );
-//     return res.status(200).json({message:"success"});
+    // Update the user's email confirmation status in the database
+    await userModel.findOneAndUpdate(
+      { email: decoded.email },
+      { confirmEmail: true }
+    );
+    return res.status(200).json({message:"success"});
 
-//     // Redirect the user to the login page
-//     //return res.redirect('https:');
-//   } catch (error) {
-//     // Handle errors, such as invalid or expired tokens
-//     return res.status(400).json({ message: "Invalid or expired token" });
-//   }
-// };
+    // Redirect the user to the login page
+    //return res.redirect('https:');
+  } catch (error) {
+    // Handle errors, such as invalid or expired tokens
+    return res.status(400).json({ message: "Invalid or expired token" });
+  }
+};
 
 
 // login function
@@ -72,11 +72,11 @@ export const SignIn = async (req, res, next) => {
        const user = await userModel.findOne({ email }).select("+password");
         if (!user) return next(new AppError('Email not found', 404));
 
-      //   // check if the user confirmed his email
-      //   if (!user.confirmEmail) {
-      // return next(new AppError('please confirm your email', 409));  // 409 Conflict
+        // check if the user confirmed his email
+        if (!user.confirmEmail) {
+      return next(new AppError('please confirm your email', 409));  // 409 Conflict
  
-
+        }
 const match = await bcrypt.compare(password, user.password);
         if (!match) {
             return next(new AppError('Invalid password', 401));
@@ -98,7 +98,6 @@ const match = await bcrypt.compare(password, user.password);
         user.refreshToken = refreshToken;
               user.save().catch(err => console.error("Refresh token save failed:", err));
 
-        //console.log("User signed in. Refresh token saved:", user.refreshToken);
 
         return res.status(200).json({
          
