@@ -55,6 +55,7 @@ export default function Chart() {
           justifyContent: "space-between",
         }}
       >
+        {/* أزرار الزوار والمبيعات */}
         <div
           className="btn-box mb-3"
           style={{
