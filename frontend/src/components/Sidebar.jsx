@@ -18,12 +18,14 @@ export default function Sidebar() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] flex">
-      <aside className="w-64 bg-[#F8F9FA] p-5 flex flex-col h-screen">
+      <aside className="w-64 bg-[#F8F9FA] p-5 flex flex-col h-screen font-[Cairo]">
 
+        {/* اللوجو */}
         <div className="logo p-3">
           <img src={Logo} alt='rezly logo' className='w-30 h-13 m-auto' />
         </div>
 
+        {/* القائمة */}
         <nav className="flex-1 mt-3">
           <ul className="space-y-4">
             {menuItems.map(item => (
@@ -32,13 +34,12 @@ export default function Sidebar() {
                   onClick={() => setActive(item.id)}
                   className={`w-full flex items-center justify-start gap-3 p-3 rounded-xl
                               hover:text-black hover:bg-white
-                              border-none transition
-                              text-[#7E818C]`}
+                              border-none transition`}
                 >
                   <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#6A0EAD] text-white">
                     <img src={item.icon} className="w-7 h-6" />
                   </div>
-                  <span className={`${active === item.id ? 'font-bold' : 'font-normal'}`}>
+                  <span className={`text-[14px] leading-[21px] font-[Cairo] ${active === item.id ? 'font-bold text-black' : 'font-normal text-black'}`}>
                     {item.label}
                   </span>
                 </button>
@@ -47,20 +48,22 @@ export default function Sidebar() {
           </ul>
         </nav>
 
+        {/* زر تسجيل الخروج */}
         <div className="mt-auto pt-6">
           <button className="w-full flex items-center justify-start gap-3 p-3 rounded-xl 
-                             text-[#7E818C] hover:text-black hover:bg-white border-none transition">
+                             border-none transition hover:text-black hover:bg-white">
             <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#6A0EAD] text-white">
               <img src={Logout} className="w-7 h-6" />
             </div>
-            <span>تسجيل الخروج</span>
+            <span className="text-[14px] leading-[21px] font-bold text-black">تسجيل الخروج</span>
           </button>
         </div>
 
       </aside>
 
+      {/* المحتوى حسب active */}
       <main className="flex-1 p-6">
-        {/* المحتوى حسب active */}
+        {/* ممكن تضعي هنا المحتوى الخاص بكل صفحة */}
       </main>
     </div>
   )

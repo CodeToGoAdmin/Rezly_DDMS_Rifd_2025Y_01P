@@ -1,9 +1,12 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
 
-body{
-  background-color: #F8F9FA;
-  overflow-x: hidden
+body {
+  font-family: 'Cairo';
+    background-color: #F8F9FA;
+
 }
+
 button:focus {
   outline: none !important;
   box-shadow: none !important;
@@ -122,3 +125,11 @@ button:hover {
         }
        
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}

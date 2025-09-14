@@ -18,8 +18,18 @@
 .fc .fc-timegrid-axis .fc-scrollgrid-section > * { border: none !important; box-shadow: none !important; background: transparent !important; }
 
 .fc-direction-rtl .fc-timegrid-slot-label { border: none !important; background: transparent !important; box-shadow: none !important; }
-.fc .fc-timegrid-slot-label-frame { background: transparent !important; }
-.fc .fc-timegrid-slot-label { font-weight: 600; color: #374151; }
+.fc .fc-timegrid-slot-label-frame { background: transparent !important; display: flex;
+  align-items: flex-start;   /* من الأعلى */
+  justify-content: flex-end; /* لأن الاتجاه RTL */
+  padding-top: 0px;          /* مسافة صغيرة جدًا عن الخط */
+  height: 100%;
+  box-sizing: border-box;    /* يتعامل مع البادينغ صح */
+}
+
+.fc .fc-timegrid-slot-label { font-weight: 600; color: #374151; margin-top: 0 !important;
+  padding: 0 !important;
+  line-height: 1;           /* لرفع رقم الساعة على مستوى الخط */
+ }
 .fc .fc-timegrid-slot { height: 64px !important; }
 
 .fc .fc-timegrid-event,
@@ -62,3 +72,34 @@
   border-radius: 6px;
 }
 
+/* الغاء أي سكّول داخل FullCalendar */
+.fc .fc-scroller {
+  overflow: hidden !important;
+}
+
+.fc .fc-scroller-liquid-absolute {
+  overflow: hidden !important;
+}
+
+/* إذا بقي يظهر scrollbar في الوقت نفسه */
+.fc-timegrid-slots {
+  overflow: hidden !important;
+}
+
+/* إزالة الخط أو الحدود من العمود الفارغ فوق الساعات */
+.fc .fc-timegrid-axis .fc-scrollgrid-section > :first-child {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+
+/* إلغاء الحد العلوي عاليمين فوق الساعات */
+/* إزالة أي حد أو خط في بداية الكاليندر تحت الديف العلوي 
+
+.fc .fc-scrollgrid {
+  border-top: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+*/

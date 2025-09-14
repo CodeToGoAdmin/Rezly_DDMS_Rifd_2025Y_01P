@@ -6,7 +6,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./Calender.css";
-import EventModal from "./EventModal";
+import EventModal from "./EventModal.jsx";
 import CalenderIcon from "../../icons/calender.svg";
 import ReSizeIcon from "../../icons/resize.svg";
 import DownArrowIcon from "../../icons/downarrow.svg";
@@ -162,7 +162,8 @@ const handleSaveEvent = () => {
 
   return (
     <>
-<div className="bg-white w-[684px] h-[922px] rounded-[16px] overflow-y-auto relative z-0" dir="rtl">
+<div className="bg-white w-full h-full rounded-[16px] overflow-hidden relative z-0" dir="rtl">
+
         {/* الهيدر */}
         <div className="grid grid-cols-[50px_1fr] ">
           <div className="border-l border-[#eee] w-[46px] pt-[12px]"></div>
@@ -171,7 +172,8 @@ const handleSaveEvent = () => {
               <div className="relative">
   <button
     onClick={() => setShowDatePicker(!showDatePicker)}
-    className="45 w-[147px] h-[32px] px-[8px] py-2 rounded-lg font-semibold flex items-center gap-x-[8px] !border-0 !outline-nonebg-white w-auto h-[32px] px-[8px] py-2 rounded-[8px] font-semibold flex items-center gap-x-[8px] !border-0 !outline-none"
+      className="h-[32px] w-[auto] px-2 flex items-center gap-2 rounded-[8px] font-semibold bg-white border-0 outline-none"
+
   >
     <img src={CalenderIcon} alt="calender" />
   <span className="font-cairo text-[14px] font-bold text-black">
@@ -208,27 +210,14 @@ const handleSaveEvent = () => {
             </div>
 
             <div>
-              <div className=" flex gap-[12px] bg-purple-600 text-white px-2 py-2 rounded-lg cursor-pointer font-bold">
+              <div>
                 <img src={ReSizeIcon} alt="calender" onClick={() => setOpen(true)}/>
               </div>
             </div>
           </div>
         </div>
 
-{open && (
-        <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
-  <div className="bg-[#ffffff] rounded-2xl p-6 shadow-lg w-[400px]">
-    <h2 className="text-lg font-bold mb-4">مودال مع خلفية معتمة</h2>
 
-            <button
-              onClick={() => setOpen(false)}
-              className="mt-4 px-4 py-2 bg-gray-200 rounded-lg"
-            >
-              إغلاق
-            </button>
-          </div>
-        </div>
-      )}
         {/* الكاليندر */}
        <FullCalendar
   ref={calendarRef}
@@ -241,7 +230,7 @@ const handleSaveEvent = () => {
   events={events}
   headerToolbar={false}
   slotMinTime="08:00:00"
-  slotMaxTime="22:00:00"
+  slotMaxTime="24:00:00"
   slotDuration="01:00:00"
   allDaySlot={false}
   locale="ar"
@@ -252,6 +241,11 @@ const handleSaveEvent = () => {
   eventOrder={(a,b) => a.id - b.id} // ترتيب حسب الإضافة
   height="100%"
   eventContent={renderEvent}
+   slotLabelContent={(arg) => {
+    let hours = arg.date.getHours();     // 0-23
+    let displayHour = hours % 12 === 0 ? 12 : hours % 12; // 12h format
+    return displayHour + ":00";
+  }}
   eventDidMount={(info) => {
   const el = info.el;
   const idx = info.event.extendedProps.orderIndex ?? 0;
@@ -268,7 +262,7 @@ const handleSaveEvent = () => {
 
       {/* مودال الحدث */}
       {showModal && (
-  <div className="fixed inset-0 z-[9999] flex justify-center items-center bg-black/30">
+  <div className="fixed inset-0 z-[9999] flex justify-center items-center">
     <EventModal
       newEvent={newEvent}
       setNewEvent={setNewEvent}
