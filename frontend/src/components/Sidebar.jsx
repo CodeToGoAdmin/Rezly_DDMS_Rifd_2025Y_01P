@@ -18,7 +18,9 @@ export default function Sidebar() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] flex">
-      <aside className="w-64 bg-[#F8F9FA] p-5 flex flex-col h-screen font-[Cairo]">
+
+      {/* الـ Sidebar */}
+      <aside className="w-64 bg-[#F8F9FA] p-5 flex flex-col min-h-[150vh] font-[Cairo] overflow-y-auto scroll-smooth">
 
         {/* اللوجو */}
         <div className="logo p-3">
@@ -49,7 +51,7 @@ export default function Sidebar() {
         </nav>
 
         {/* زر تسجيل الخروج */}
-        <div className="mt-auto pt-6">
+        <div className="mt-auto">
           <button className="w-full flex items-center justify-start gap-3 p-3 rounded-xl 
                              border-none transition hover:text-black hover:bg-white">
             <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#6A0EAD] text-white">
@@ -63,8 +65,9 @@ export default function Sidebar() {
 
       {/* المحتوى حسب active */}
       <main className="flex-1 p-6">
-        {/* ممكن تضعي هنا المحتوى الخاص بكل صفحة */}
+        {/* هنا يمكن وضع محتوى كل صفحة حسب active */}
       </main>
+
     </div>
   )
 }
