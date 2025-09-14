@@ -1,8 +1,18 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
 
-body{
-  background-color: #F8F9FA;
+body {
+  font-family: 'Cairo';
+    background-color: #F8F9FA;
+
 }
+body {
+  overflow-x: hidden;
+}
+.chart, .table {
+  max-width: 100%;
+}
+
 button:focus {
   outline: none !important;
   box-shadow: none !important;
@@ -105,7 +115,7 @@ button:hover {
         }
         .tab-btn.active {
           background: #6A0EAD;
-          color: #fff;
+          color: #fff!important;
         }
         .filter{
           width: 208px;
@@ -121,3 +131,11 @@ button:hover {
         }
        
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}

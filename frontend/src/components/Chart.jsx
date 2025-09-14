@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import Charticon from '../assets/icon/chart-03.svg';
 
-import React from "react";
-import Charticon from '../assets/icon/chart-03.svg'
-
 import {
   ResponsiveContainer,
   LineChart,
@@ -13,7 +10,6 @@ import {
   Tooltip,
   BarChart,
   Bar,
-
 } from "recharts";
 
 const data = [
@@ -33,6 +29,16 @@ export default function Chart() {
     setChartType(chartType === "line" ? "bar" : "line");
   };
 
+  const buttonTextStyle = {
+    color: "var(--black, #000)",
+    textAlign: "center",
+    fontFamily: "Cairo",
+    fontSize: "14px",
+    fontStyle: "normal",
+    fontWeight: 600,
+    lineHeight: "150%", // 21px
+  };
+
   return (
     <section
       style={{
@@ -49,46 +55,43 @@ export default function Chart() {
           justifyContent: "space-between",
         }}
       >
+        {/* أزرار الزوار والمبيعات */}
         <div
           className="btn-box mb-3"
           style={{
             display: "flex",
             gap: "10px",
             alignItems: "center",
-            justifyContent: "space-between",
           }}
         >
-          <button className="tab-btn active">الزوار</button>
-          <button className="tab-btn">المبيعات</button>
+          <button className="tab-btn  active" style={buttonTextStyle}>الزوار</button>
+
+          <div style={{
+            display: "flex",
+            padding: "0 16px",
+            justifyContent: "space-between",
+            alignItems: "center",
+            alignSelf: "stretch",
+            gap: "50px"
+          }}>
+            <button className="tab-btn " style={buttonTextStyle}>المبيعات</button>
+            <select className="filter-select" style={buttonTextStyle}>
+              <option>اليوم</option>
+              <option selected>الأسبوع</option>
+              <option>الشهر</option>
+            </select>
+          </div>
         </div>
 
+        {/* أيقونة التاريخ وبقية الفلاتر */}
         <div
           className="filter mb-3"
           style={{
             display: "flex",
             gap: "10px",
             alignItems: "center",
-            justifyContent: "space-between",
           }}
         >
-
-  return (
-    <section style={{  borderRadius: "10px", padding: "20px", background: "white" }}>
-      <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "space-between" }}>
-
-        <div className="btn-box mb-3" style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "space-between" }}>
-          <button className="tab-btn active">الزوار</button>
-          <button className="tab-btn">المبيعات</button>
-
-
-        </div>
-        <div className="filter mb-3" style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "space-between" }}>
-          <select className="filter-select">
-            <option>اليوم</option>
-            <option selected>الأسبوع</option>
-            <option>الشهر</option>
-          </select>
-
           <button className="filter-btn" onClick={toggleChartType}>
             <img src={Charticon} alt="chart icon date" />
             <svg
@@ -138,34 +141,6 @@ export default function Chart() {
           </BarChart>
         )}
       </ResponsiveContainer>
-
-          <button className="filter-btn">
-            <img src={Charticon} alt="chart icon date" />
-          </button>
-          
-          <button className="filter-btn filter-btn2">...</button>
-
-
-        </div>
-
-      </div>
-
-      <ResponsiveContainer width="100%" height={250}>
-        <LineChart data={data}>
-          <XAxis dataKey="day" interval={0} tick={{ fontSize: 11, fill: "#333", fontFamily: "Cairo" }} />
-          <YAxis hide />       
-          <Tooltip />
-          <Line
-            type="monotone"
-            dataKey="value"
-            stroke="#7c3aed"
-            strokeWidth={3}
-            dot
-          />
-        </LineChart>
-      </ResponsiveContainer>
-
-      
     </section>
   );
 }
