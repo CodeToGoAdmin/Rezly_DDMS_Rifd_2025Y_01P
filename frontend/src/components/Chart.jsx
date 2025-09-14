@@ -55,7 +55,6 @@ export default function Chart() {
           justifyContent: "space-between",
         }}
       >
-        {/* أزرار الزوار والمبيعات */}
         <div
           className="btn-box mb-3"
           style={{
@@ -64,9 +63,8 @@ export default function Chart() {
             alignItems: "center",
           }}
         >
-          <button className="tab-btn active" style={buttonTextStyle}>الزوار</button>
+          <button className="tab-btn  active" style={buttonTextStyle}>الزوار</button>
 
-          {/* المبيعات وبوتون الأسبوع داخل flex لعمل الفراغ بينهم */}
           <div style={{
             display: "flex",
             padding: "0 16px",
@@ -75,7 +73,7 @@ export default function Chart() {
             alignSelf: "stretch",
             gap: "50px"
           }}>
-            <button className="tab-btn" style={buttonTextStyle}>المبيعات</button>
+            <button className="tab-btn " style={buttonTextStyle}>المبيعات</button>
             <select className="filter-select" style={buttonTextStyle}>
               <option>اليوم</option>
               <option selected>الأسبوع</option>

@@ -67,7 +67,7 @@ const MiniCalender = ({ currentDate, handleDateChange }) => {
 
           {/* زر اختيار التاريخ */}
           <button
-  className="rounded-[8px] font-bold w-full h-[32px] bg-[#6A0EAD] text-white border-0 focus:outline-none"
+  className="selectDateButton"
   style={{ color: "white", border: "none" }}
   onClick={() => handleDateChange(tempDate)}
 >

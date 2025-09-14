@@ -6,6 +6,12 @@ body {
     background-color: #F8F9FA;
 
 }
+body {
+  overflow-x: hidden;
+}
+.chart, .table {
+  max-width: 100%;
+}
 
 button:focus {
   outline: none !important;
@@ -109,7 +115,7 @@ button:hover {
         }
         .tab-btn.active {
           background: #6A0EAD;
-          color: #fff;
+          color: #fff!important;
         }
         .filter{
           width: 208px;

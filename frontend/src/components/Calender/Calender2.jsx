@@ -198,12 +198,14 @@ const handleSaveEvent = () => {
 
 
               <div className="relative">
-                <button onClick={()=>setShowViewMenu(!showViewMenu)} className="bg-white w-[111px] h-[32px] px-[8px] py-2 rounded-[8px] font-semibold flex items-center justify-between gap-x-[12px] !border-0 !outline-none"> <img src={RightArrowIcon} alt="rightarrow" /> <span className="font-cairo text-[14px] font-[700]"> {view==="timeGridDay"?"يوم":view==="timeGridWeek"?"أسبوع":"شهر"} </span> <img src={LeftArrowIcon} alt="leftarrow" /> </button>
+                <button onClick={()=>setShowViewMenu(!showViewMenu)} className="bg-white w-[111px] h-[32px] px-[8px] py-2 rounded-[8px] font-semibold flex items-center justify-between gap-x-[12px] !border-0 !outline-none"> 
+                  <img src={RightArrowIcon} alt="rightarrow" /> 
+                  <span className="font-cairo text-[14px] font-[700] text-black"> {view==="timeGridDay"?"يوم":view==="timeGridWeek"?"أسبوع":"شهر"} </span> <img src={LeftArrowIcon} alt="leftarrow" /> </button>
                 {showViewMenu && (
                   <div className="absolute z-30 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg w-24">
-                    <div className="px-3 py-2 cursor-pointer hover:bg-gray-100" onClick={()=>handleChangeView("timeGridDay")}>يوم</div>
-                    <div className="px-3 py-2 cursor-pointer hover:bg-gray-100" onClick={()=>handleChangeView("timeGridWeek")}>أسبوع</div>
-                    <div className="px-3 py-2 cursor-pointer hover:bg-gray-100" onClick={()=>handleChangeView("dayGridMonth")}>شهر</div>
+                    <div className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-black" onClick={()=>handleChangeView("timeGridDay")}>يوم</div>
+                    <div className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-black" onClick={()=>handleChangeView("timeGridWeek")}>أسبوع</div>
+                    <div className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-black" onClick={()=>handleChangeView("dayGridMonth")}>شهر</div>
                   </div>
                 )}
               </div>

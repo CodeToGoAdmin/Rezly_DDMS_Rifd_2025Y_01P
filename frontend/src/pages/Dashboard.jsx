@@ -30,29 +30,29 @@ export default function Dashboard() {
         <div className="flex-1 flex gap-6">
 
           {/* القسم الأيسر - الكروت + الشارت + جدول الحضور */}
-          <div className="w-2/5 flex flex-col gap-6">
+          <div className="w-9/24 flex flex-col gap-6">
 
             {/* الكروت */}
-            <div className="grid grid-cols-2 gap-4 w-full max-w-full">
-              <StatCard 
+            <div className="grid grid-cols-2 gap-4  w-full max-w-full">
+              <StatCard  className="w-full"
                 value={<span className="text-black text-[28px] font-cairo font-bold tracking-[1px] break-words">60</span>} 
                 icon={Icon1} 
                 title={<span className="text-black text-[12px] font-cairo font-bold leading-[18px] break-words">إشغال المكان</span>} 
                 bgColor="#9333EA" 
               />
-              <StatCard 
+              <StatCard  className="w-full"
                 value={<span className="text-black text-[28px] font-cairo font-bold tracking-[1px] break-words">$440</span>} 
                 icon={Icon2} 
                 title={<span className="text-black text-[12px] font-cairo font-bold leading-[18px] break-words">إيرادات اليوم</span>} 
                 bgColor="#22C55E" 
               />
-              <StatCard 
+              <StatCard  className="w-full"
                 value={<span className="text-black text-[28px] font-cairo font-bold tracking-[1px] break-words">23</span>} 
                 icon={Icon3} 
                 title={<span className="text-black text-[12px] font-cairo font-bold leading-[18px] break-words">اشتراكات اليوم</span>} 
                 bgColor="#3B82F6" 
               />
-              <StatCard 
+              <StatCard  className="w-full"
                 value={<span className="text-black text-[28px] font-cairo font-bold tracking-[1px] break-words">15</span>} 
                 icon={Icon4} 
                 title={<span className="text-black text-[12px] font-cairo font-bold leading-[18px] break-words">زوار الموقع الآن</span>} 
@@ -73,7 +73,7 @@ export default function Dashboard() {
           </div>
 
           {/* القسم الأيمن - الكاليندر */}
-          <div className="w-3/5">
+          <div className="w-7/12">
             <div className="bg-white rounded-2xl shadow p-4 h-full">
               <Calender2 />
             </div>
