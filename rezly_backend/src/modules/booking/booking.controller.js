@@ -321,24 +321,14 @@ console.log(query);
   }
 };
 
-export const calendarView =async (req, res) => {
+export const calendarView = async (req, res) => {
   try {
-    const bookings = await Booking.find().populate({
-      path: 'trainer',
-      select: 'userName _id',
-      match: { _id: { $exists: true } } // يتأكد من وجود مدرب
-    }).lean();
+    const bookings = await Booking.find().select("date timeStart timeEnd").lean();
 
     const calendarEvents = bookings.map(b => ({
-      id: b._id,
-      title: b.service + " - " + (b.trainer ? b.trainer.userName : 'Unknown Trainer'),
       start: `${b.date.toISOString().split('T')[0]}T${b.timeStart}`,
       end: `${b.date.toISOString().split('T')[0]}T${b.timeEnd}`,
-      extendedProps: {
-        location: b.location,
-        status: b.status,
-        members: b.members || []
-      }
+      date: b.date.toISOString().split('T')[0]
     }));
 
     res.json({
