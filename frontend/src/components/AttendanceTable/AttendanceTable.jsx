@@ -18,7 +18,7 @@ const AttendanceTable = () => {
   return (
     <div className="attendance-container">
       <div className="attendance-header">
-        <h2>سجل الحضور</h2>
+        <h2 className="table-title">سجل الحضور</h2>
         <button className="back-btn">›</button>
       </div>
 
@@ -34,15 +34,14 @@ const AttendanceTable = () => {
         <tbody>
           {data.map((row, i) => (
             <tr key={i}>
-              <td>{row.name}</td>
-              <td>{row.inTime}</td>
-              <td>{row.outTime}</td>
+              <td className="table-text">{row.name}</td>
+              <td className="table-text">{row.inTime}</td>
+              <td className="table-text">{row.outTime}</td>
               <td>
                 <span className={`status-badge ${getStatusClass(row.status)}`}>
                   {row.status}
                 </span>
               </td>
-
             </tr>
           ))}
         </tbody>

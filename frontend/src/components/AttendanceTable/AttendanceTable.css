@@ -1,11 +1,14 @@
 .attendance-container {
   background: #fff;
-  padding: 20px;
+  padding: 14px;
   border-radius: 12px;
   width: 100%;
   max-width: 600px;
   margin: auto;
-  font-family: "Tahoma";
+  font-family: "Cairo", sans-serif; /* تم التغيير */
+  font-size: 12px; /* تم التغيير */
+  font-weight: 700; /* تم التغيير */
+  line-height: 150%; /* تم التغيير */
   direction: rtl;
 }
 
@@ -37,14 +40,15 @@
   width: 100%;
   border-collapse: collapse;
   text-align: center;
-  font-size: 14px;
+  font-size: 12px; /* تم التغيير */
+color: #000;
+
 }
 
 .attendance-table thead {
-  background: #7a1fa2; 
+  background: #6A0EAD; 
   color: white;
 }
-
 
 .attendance-table thead th:last-child {
   border-top-left-radius: 8px;
@@ -62,16 +66,18 @@
   border-bottom: 1px solid #eee;
 }
 
+/* تلوين الصفوف الزوجية */
 .attendance-table tbody tr:nth-child(even) {
-  background: #dcd1dd;
+  background: #F8F9FA;
 }
 
+/* الحالات */
 .status-badge {
   padding: 4px 10px;
   border-radius: 8px;
-  font-size: 13px;
   font-weight: bold;
   color: #fff;
+  font-size: 10px; /* تم التغيير */
 }
 
 .status-complete {
@@ -79,5 +85,5 @@
 }
 
 .status-present {
-  background: #9c27b0;
+  background: #6A0EAD;
 }
