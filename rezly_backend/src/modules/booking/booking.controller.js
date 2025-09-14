@@ -4,34 +4,46 @@ import userModel from '../../../DB/models/user.model.js'
 import mongoose from 'mongoose';
 import { AppError } from '../../Utils/catchError.js';
 
-
 export const getBookings = async (req, res, next) => {
   try {
-    // ✅ بيانات المستخدم موجودة من middleware auth
     const { userId, user } = req;
     const role = user.role.toLowerCase();
 
-    let bookings = [];
-    
+    let bookingsQuery;
+
     if (role === "admin") {
-      // Admin يشوف كل الحجوزات
-      bookings = await Booking.find().lean();
+      bookingsQuery = Booking.find().select("_id name date trainer"); // projection
     } else if (role === "trainer") {
-      // Trainer يشوف حجوزاته فقط
-      bookings = await Booking.find({ trainer: userId }).lean();
+      bookingsQuery = Booking.find({ trainer: userId }).select("_id name date trainer");
     } else {
-      // Member يشوف الحجوزات اللي هو مشارك فيها
-      const memberBookings = await BookingMember.find({ member: userId }).select("booking").lean();
+      // member
+      const memberBookings = await BookingMember.find({ member: userId })
+        .select("booking")
+        .lean();
+
       const bookingIds = memberBookings.map(bm => bm.booking);
-      bookings = await Booking.find({ _id: { $in: bookingIds } }).lean();
+      bookingsQuery = Booking.find({ _id: { $in: bookingIds } }).select("_id name date trainer");
     }
 
-    // ربط الأعضاء مع كل حجز مرة واحدة
+    // جلب الحجوزات مع lean()
+    const bookings = await bookingsQuery.lean();
+
+    if (bookings.length === 0) {
+      return res.status(200).json({
+        status: "success",
+        data: [],
+        metadata: { totalResults: 0, message: "No bookings found" },
+        message: "Success",
+      });
+    }
+
+    // ربط الأعضاء مرة واحدة لكل الحجز
     const bookingIds = bookings.map(b => b._id);
     const bookingMembers = await BookingMember.find({ booking: { $in: bookingIds } })
-      .select("booking member")
+      .select("booking member -_id")
       .lean();
 
+    // إنشاء خريطة لحجز -> أعضاء
     const bookingMap = {};
     bookingMembers.forEach(bm => {
       const bid = bm.booking.toString();
@@ -43,16 +55,6 @@ export const getBookings = async (req, res, next) => {
       ...b,
       members: bookingMap[b._id.toString()] || [],
     }));
-
-    // لو ما في حجوزات، نرسل رسالة no data
-    if (result.length === 0) {
-      return res.status(200).json({
-        status: "success",
-        data: [],
-        metadata: { totalResults: 0, message: "No bookings found" },
-        message: "Success",
-      });
-    }
 
     return res.status(200).json({
       status: "success",
@@ -66,6 +68,7 @@ export const getBookings = async (req, res, next) => {
   }
 };
 
+
 function convertToMinutes(timeStr) {
   const [time, modifier] = timeStr.split(" ");
   let [hours, minutes] = time.split(":").map(Number);
@@ -77,19 +80,15 @@ function convertToMinutes(timeStr) {
 
 export const createBooking = async (req, res, next) => {
   try {
-    const { userId, user } = req;
-    const role = user.role.toLowerCase();
+    const {  user } = req;
 
-    // ===== 2️⃣ جلب البيانات من البودي =====
-    const { service, trainerId, date, timeStart, timeEnd, location } = req.body;
+    const { service, trainerId, date, timeStart, timeEnd, location ,numberOfMembers} = req.body;
 
-    // ===== 3️⃣ تحقق من المدرب =====
     const trainer = await userModel.findById(trainerId).lean();
     if (!trainer || trainer.role.toLowerCase() !== "trainer") {
       return res.status(400).json({ status: "error", message: "Trainer not found or invalid role" });
     }
 
-    // ===== 4️⃣ تحقق من التاريخ والوقت =====
     const now = new Date();
     const bookingDate = new Date(date);
     if (isNaN(bookingDate.getTime())) {
@@ -117,8 +116,16 @@ export const createBooking = async (req, res, next) => {
     if (conflict) {
       return res.status(400).json({ status: "error", message: "Trainer has a conflicting booking at this time" });
     }
+ const roomBookings = await Booking.find({ location, date }).lean();
+    const roomConflict = roomBookings.some(b => {
+      const s = convertToMinutes(b.timeStart);
+      const e = convertToMinutes(b.timeEnd);
+      return Math.max(s, startMinutes) < Math.min(e, endMinutes);
+    });
+    if (roomConflict) {
+      return res.status(400).json({ status: "error", message: "Room is already booked at this time" });
+    }
 
-    // ===== 6️⃣ إنشاء الحجز =====
     const newBooking = await Booking.create({
       service,
       trainer: trainerId,
@@ -127,7 +134,8 @@ export const createBooking = async (req, res, next) => {
       timeEnd,
       startMinutes,
       endMinutes,
-      location
+      location,
+      numberOfMembers
     });
 
     return res.status(201).json({
@@ -164,7 +172,7 @@ console.log(userId.toString);
     if (
       role.toLowerCase() !== "admin" && !(role.toLowerCase() === "trainer" && booking.trainer.toString() === userId.toString())
     ) {
-            console.log("gmkfjmgjkfd");
+          
 
       return res.status(403).json({ status: "error", message: "Not authorized" });
     }
@@ -214,8 +222,6 @@ console.log(userId.toString);
       { new: true, runValidators: true, lean: true }
     );
 
-    // جاهز لـ real-time updates لاحقاً
-    // io.emit("updateBooking", updatedBooking);
 
     return res.status(200).json({ status: "success", data: updatedBooking, message: "Booking updated successfully" });
 
@@ -224,28 +230,25 @@ console.log(userId.toString);
   }
 };
 
-
-
 export const deleteBooking = async (req, res, next) => {
   try {
-         const { userId, user } = req;
+    const { user, userId } = req;
     const role = user.role.toLowerCase();
-    console.log(role);
+
     if (role !== "admin") {
       return res.status(403).json({ status: "error", message: "Not authorized: Admin only" });
     }
 
     const bookingId = req.params.id;
-    if (!bookingId || !bookingId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!mongoose.Types.ObjectId.isValid(bookingId)) {
       return res.status(400).json({ status: "error", message: "Invalid booking ID" });
     }
 
     await BookingMember.deleteMany({ booking: bookingId });
 
-    const deleted = await Booking.findByIdAndDelete(bookingId);
+    const deleted = await Booking.findByIdAndDelete(bookingId).lean();
     if (!deleted) return res.status(404).json({ status: "error", message: "Booking not found" });
 
-    // 7️⃣ رد بالنجاح
     return res.status(200).json({
       status: "success",
       data: null,
@@ -257,6 +260,7 @@ export const deleteBooking = async (req, res, next) => {
     next(err);
   }
 };
+
 
 export const filterBookings = async (req, res) => {
   try {

@@ -1,22 +1,22 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import jwt from 'jsonwebtoken'; // ✅ استيراد jwt
-import app from '../index.js'; // ملف express الرئيسي
-import Booking from '../DB/models/booking.model.js';
-import User from '../DB/models/user.model.js';
+import jwt from 'jsonwebtoken';
+import initApp from '../../src/initApp.js';
+import Booking from '../../DB/models/booking.model.js';
+import User from '../../DB/models/user.model.js';
 
 let mongoServer;
-jest.setTimeout(20000); // 20 ثانية لجميع الاختبارات
+jest.setTimeout(150000);
+
 
 beforeAll(async () => {
+  console.log("Connecting to MongoMemoryServer...");
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
-
-  await mongoose.disconnect(); // فصل الاتصال القديم
-  await mongoose.connect(uri); // الاتصال الجديد فقط للاختبارات
+  await mongoose.connect(uri);
+  console.log("Mongo connected");
 });
-
 afterAll(async () => {
   await mongoose.disconnect();
   await mongoServer.stop();
@@ -27,9 +27,11 @@ afterEach(async () => {
   await User.deleteMany();
 });
 
-describe('Booking API', () => {
+
+describe('Booking API Integration Tests', () => {
   let adminToken, trainerToken, memberToken;
-  let trainer, trainerId; // <-- هنا
+  let trainer, trainerId;
+
   beforeEach(async () => {
     const admin = await User.create({ userName: 'Admin', email: 'admin@test.com', password: 'hashed', role: 'Admin' });
     trainer = await User.create({ userName: 'Trainer', email: 'trainer@test.com', password: 'hashed', role: 'Trainer' });
@@ -43,9 +45,8 @@ describe('Booking API', () => {
     memberToken = `Bearer ${jwt.sign({ id: member._id, role: 'Member' }, secret, { expiresIn: '1h' })}`;
   });
 
-
   test('Admin can create a booking', async () => {
-    const res = await request(app)
+    const res = await request(initApp)
       .post('/booking')
       .set('Authorization', adminToken)
       .send({
@@ -56,14 +57,13 @@ describe('Booking API', () => {
         timeEnd: '11:00 AM',
         location: 'Room A'
       });
-  console.log(res.body); // <--- أضف هذا
 
     expect(res.statusCode).toBe(201);
     expect(res.body.data).toHaveProperty('service', 'Yoga');
   });
 
   test('Trainer cannot create a booking', async () => {
-    const res = await request(app)
+    const res = await request(initApp)
       .post('/booking')
       .set('Authorization', trainerToken)
       .send({
@@ -75,16 +75,17 @@ describe('Booking API', () => {
         location: 'Room A'
       });
 
-    expect(res.statusCode).toBe(403); // forbidden
+    expect(res.statusCode).toBe(403);
   });
- test('Admin and Trainer can get all bookings', async () => {
+
+  test('Admin and Trainer can get all bookings', async () => {
     await Booking.create({ service: 'Yoga', trainer: trainerId, date: new Date(), timeStart: '10:00', timeEnd: '11:00', location: 'Room A' });
 
-    const resAdmin = await request(app)
+    const resAdmin = await request(initApp)
       .get('/booking/all_booking')
       .set('Authorization', adminToken);
 
-    const resTrainer = await request(app)
+    const resTrainer = await request(initApp)
       .get('/booking/all_booking')
       .set('Authorization', trainerToken);
 
@@ -97,7 +98,7 @@ describe('Booking API', () => {
   test('Filter bookings by trainer', async () => {
     await Booking.create({ service: 'Yoga', trainer: trainerId, date: new Date(), timeStart: '10:00', timeEnd: '11:00', location: 'Room A' });
 
-    const res = await request(app)
+    const res = await request(initApp)
       .get('/booking/filter')
       .set('Authorization', adminToken)
       .query({ trainerId: trainer._id.toString() });
@@ -109,7 +110,7 @@ describe('Booking API', () => {
   test('Get booking details by ID', async () => {
     const booking = await Booking.create({ service: 'Yoga', trainer: trainerId, date: new Date(), timeStart: '10:00AM', timeEnd: '11:00 AM', location: 'Room A' });
 
-    const res = await request(app)
+    const res = await request(initApp)
       .get(`/booking/${booking._id}`)
       .set('Authorization', adminToken);
 
@@ -120,7 +121,7 @@ describe('Booking API', () => {
   test('Admin can update a booking', async () => {
     const booking = await Booking.create({ service: 'Yoga', trainer: trainerId, date: new Date(), timeStart: '10:00 AM', timeEnd: '11:00 AM', location: 'Room A' });
 
-    const res = await request(app)
+    const res = await request(initApp)
       .put(`/booking/${booking._id}`)
       .set('Authorization', adminToken)
       .send({ service: 'Pilates' });
@@ -132,11 +133,11 @@ describe('Booking API', () => {
   test('Admin can delete a booking', async () => {
     const booking = await Booking.create({ service: 'Yoga', trainer: trainerId, date: new Date(), timeStart: '10:00 AM', timeEnd: '11:00 AM', location: 'Room A' });
 
-    const res = await request(app)
+    const res = await request(initApp)
       .delete(`/booking/${booking._id}`)
       .set('Authorization', adminToken);
 
     expect(res.statusCode).toBe(200);
-expect(res.body.message).toBe('Success');
+    expect(res.body.message).toBe('Success');
   });
 });

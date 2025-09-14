@@ -8,7 +8,8 @@ export const createBookingSchema = Joi.object({
   timeStart: Joi.string().pattern(/^([0-9]{1,2}):([0-9]{2})\s?(AM|PM)$/).required(),
   timeEnd: Joi.string().pattern(/^([0-9]{1,2}):([0-9]{2})\s?(AM|PM)$/).required(),
   location: Joi.string().required(),
-status: Joi.string().valid("pending", "confirmed", "cancelled").default("pending")
+status: Joi.string().valid("pending", "confirmed", "cancelled").default("pending"),
+  numberOfMember: Joi.number().integer().min(1).required(),
 
 });
 export const updateBookingSchema = Joi.object({
@@ -18,7 +19,9 @@ export const updateBookingSchema = Joi.object({
   timeStart: Joi.string().pattern(/^([0-9]{1,2}):([0-9]{2})\s?(AM|PM)$/),
   timeEnd: Joi.string().pattern(/^([0-9]{1,2}):([0-9]{2})\s?(AM|PM)$/),
   location: Joi.string(),
-  status: Joi.string().valid('pending', 'confirmed', 'cancelled')
+  status: Joi.string().valid('pending', 'confirmed', 'cancelled'), 
+   numberOfMember: Joi.number().integer().min(1).required(), 
+
 });
 export const validateObjectId = (paramName) => (req, res, next) => {
   if (!mongoose.Types.ObjectId.isValid(req.params[paramName])) {

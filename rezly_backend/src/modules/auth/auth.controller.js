@@ -7,77 +7,101 @@ import { customAlphabet } from "nanoid";
 import { arabicSlugify } from "../../Utils/ArabicSlug.js";
 import mongoose from 'mongoose';
 
+
 export const SignUp = async (req, res, next) => {
-    const { userName, email, password, phone, gender, midicalIssue, role } = req.body;
+    try {
+        const { userName, email, password, phone, gender, midicalIssue, role } = req.body;
 
-    const existingUser = await userModel.findOne({ email });
-    if (existingUser) return next(new AppError('Email already exists', 409));
+        // تحقق من وجود المستخدم مع استخدام projection أصغر لتسريع الاستعلام
+        const existingUser = await userModel.findOne({ email }).lean();
+        if (existingUser) return next(new AppError('Email already exists', 409));
 
-    const passwordHashed = await bcrypt.hash(password, parseInt(process.env.SALTROUND));
+        const passwordHashed = await bcrypt.hash(password, parseInt(process.env.SALTROUND));
 
-    const refreshToken = jwt.sign({ id: new mongoose.Types.ObjectId() }, process.env.REFRESHTOKEN_SECRET, { expiresIn: '30d' });
+        const refreshToken = jwt.sign(
+            { id: new mongoose.Types.ObjectId() },
+            process.env.REFRESHTOKEN_SECRET,
+            { expiresIn: '30d' }
+        );
 
-    const newUser = await userModel.create({
-        userName,
-        email,
-        password: passwordHashed,
-        phone,
-        gender,
-        midicalIssue,
-        role,
-        slug: arabicSlugify(`${userName.trim()}-${new mongoose.Types.ObjectId()}`),
-        refreshToken
-    });
+        const newUser = await userModel.create({
+            userName,
+            email,
+            password: passwordHashed,
+            phone,
+            gender,
+            midicalIssue,
+            role,
+            slug: arabicSlugify(`${userName.trim()}-${new mongoose.Types.ObjectId()}`),
+            refreshToken
+        });
 
-       const token= jwt.sign({email},process.env.CONFIRMEMAILTOKEN);
-       const confirmLink = `https://rezly-ddms-rifd-2025y-01p.onrender.com/auth/confirmEmail/${token}`;
+        // أضف expiresIn لتوكن تأكيد الإيميل لتحسين الأمان
+        const token = jwt.sign(
+            { email },
+            process.env.CONFIRMEMAILTOKEN,
+            { expiresIn: '1h' }  // صلاحية ساعة واحدة
+        );
 
-console.log("Confirm link:", confirmLink); // اختبر بالكونسول
-       await sendEmail(email,`confirm email from Booking `,userName,token)
+        const confirmLink = `https://rezly-ddms-rifd-2025y-01p.onrender.com/auth/confirmEmail/${token}`;
+        console.log("Confirm link:", confirmLink); // لا يزال للـ testing
+
+        await sendEmail(email, `confirm email from Booking`, userName, token);
 
         console.log("User created with refresh token:", newUser.refreshToken);
-    return res.status(201).json({
-        message: "success",
-        user: newUser,
-        refreshToken
-    });
+
+        return res.status(201).json({
+            message: "success",
+            user: newUser,
+            refreshToken
+        });
+    } catch (error) {
+        next(error);
+    }
 };
 
-//confirmEmail function :future need the url to the log in page if needed
-export const confirmEmail = async (req, res) => {
-  try {
-    const { token } = req.params;
-    const decoded = jwt.verify(token, process.env.CONFIRMEMAILTOKEN);
+export const confirmEmail = async (req, res, next) => {
+    try {
+        const { token } = req.params;
+        const decoded = jwt.verify(token, process.env.CONFIRMEMAILTOKEN);
 
-    await userModel.findOneAndUpdate(
-      { email: decoded.email },
-      { confirmEmail: true }
-    );
-console.log("confirmEmail is:", confirmEmail);
-console.log("token is:", token);
+        const updatedUser = await userModel.findOneAndUpdate(
+            { email: decoded.email },
+            { confirmEmail: true },
+            { new: true, lean: true }  // lean لتحسين الأداء
+        );
 
-    return res.status(200).json({ message: "success" });
-    // أو إذا بدك تعمله redirect:
-    // return res.redirect("https://your-frontend/login");
-  } catch (error) {
-    return res.status(400).json({ message: "Invalid or expired token" });
-  }
+        if (!updatedUser) {
+            return next(new AppError("User not found", 404));
+        }
+
+        console.log("Email confirmed:", decoded.email);
+        console.log("Token used:", token);
+
+        return res.status(200).json({ message: "success" });
+    } catch (error) {
+        return res.status(400).json({ message: "Invalid or expired token" });
+    }
 };
-
-
 // login function
 export const SignIn = async (req, res, next) => {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-       const user = await userModel.findOne({ email }).select("+password");
+        // جلب بيانات المستخدم مع الحقول الضرورية فقط، وlean لتقليل overhead
+        const user = await userModel.findOne({ email })
+            .select("+password refreshToken role _id")
+            .lean();
+        
         if (!user) return next(new AppError('Email not found', 404));
 
         // check if the user confirmed his email
         if (!user.confirmEmail) {
-      return next(new AppError('please confirm your email', 409));  // 409 Conflict
- 
+            return next(new AppError('Please confirm your email', 409)); // 409 Conflict
         }
-const match = await bcrypt.compare(password, user.password);
+
+        // تحقق من كلمة المرور
+        const match = await bcrypt.compare(password, user.password);
         if (!match) {
             return next(new AppError('Invalid password', 401));
         }
@@ -95,56 +119,52 @@ const match = await bcrypt.compare(password, user.password);
             process.env.REFRESHTOKEN_SECRET,
             { expiresIn: '30d' }
         );
-        user.refreshToken = refreshToken;
-              user.save().catch(err => console.error("Refresh token save failed:", err));
 
+        // تحديث refresh token في DB بدون الحاجة لإنشاء full Mongoose object
+        await userModel.findByIdAndUpdate(user._id, { refreshToken });
 
         return res.status(200).json({
-         
             message: "SignIn success",
             token,
             refreshToken,
         });
 
-    
+    } catch (error) {
+        next(error);
+    }
 };
-
 
 // refresh token
 export const refresh = async (req, res, next) => {
-    const { refreshToken } = req.body;
-
-    if (!refreshToken) {
-        return next(new AppError('Refresh token is required', 401));
-    }
-
     try {
-        //console.log("Raw token received:", refreshToken);
-       // console.log("Token length:", refreshToken.length);
-        //console.log("Secret used:", process.env.REFRESHTOKEN_SECRET);
+        const { refreshToken } = req.body;
+        if (!refreshToken) {
+            return next(new AppError('Refresh token is required', 401));
+        }
 
+        // تحقق من صحة الـ refresh token
         const decoded = jwt.verify(refreshToken, process.env.REFRESHTOKEN_SECRET);
-        //console.log("Decoded token:", decoded);
 
-        const user = await userModel.findById(decoded.id);
+        // جلب المستخدم مع الحقول الضرورية فقط
+        const user = await userModel.findById(decoded.id)
+            .select("refreshToken role _id")
+            .lean();
+
         if (!user || !user.refreshToken) {
-            //console.log("User not found or refresh token missing in DB");
             return next(new AppError('Invalid refresh token or user not found', 401));
         }
 
         // المقارنة مع trim لتجنب الفراغات
         if (user.refreshToken.trim() !== refreshToken.trim()) {
-            //console.log("Token mismatch with DB");
             return next(new AppError('Invalid refresh token or user not found', 401));
         }
 
+        // إنشاء access token جديد
         const newAccessToken = jwt.sign(
             { id: user._id, role: user.role },
             process.env.LOGINTOKEN,
             { expiresIn: '15m' }
         );
-
-        //console.log("New access token generated successfully");
 
         return res.status(200).json({
             message: 'New access token granted',
@@ -155,66 +175,73 @@ export const refresh = async (req, res, next) => {
         if (error.name === 'TokenExpiredError') {
             return next(new AppError('Refresh token expired. Please log in again.', 401));
         }
-        //console.error("Error in refresh token:", error);
         return next(new AppError(error.message, 401));
     }
 };
-
-
 // تسجيل الخروج
 export const logout = async (req, res, next) => {
   try {
-    const user = await userModel.findById(req.userId);
-    if (user) {
-      user.refreshToken = null;   // حذف refresh token من قاعدة البيانات
-      await user.save();
+    // تحديث refreshToken مباشرة بدون الحاجة لجلب كامل المستخدم
+    const result = await userModel.findByIdAndUpdate(req.userId, { refreshToken: null });
+    if (!result) {
+      return next(new AppError("User not found", 404));
     }
-    res.status(200).json({ message: "Logged out successfully" });
+    return res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     next(error);
   }
 };
 
-// sendcode function to the user email to confirm the properity
-export const sendCode = async(req,res,next)=>{
-    const {email}= req.body;
-    const code= customAlphabet('1234567890',4)();
-    const user= await userModel.findOneAndUpdate({email},{
-      sendCode:code
-    }
-    ,{
-      new:true
-    });
+// sendCode function to the user email to confirm the property
+export const sendCode = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const code = customAlphabet('1234567890', 4)();
+
+    const user = await userModel.findOneAndUpdate(
+      { email },
+      { sendCode: code },
+      { new: true, lean: true } // lean لتحسين الأداء
+    );
+
     if (!user) {
-      return next(new AppError('email not found', 409));
+      return next(new AppError('Email not found', 409));
     }
+
     const subject = 'Reset Password';
-    const username = user.userName || ''; // احصل على اسم المستخدم إذا كان موجودًا
+    const username = user.userName || '';
     const token = code; // استخدام الكود كـ token هنا
 
-    await sendEmail(email, subject, username, token,'sendCode');
-    return res.status(200).json({message:"success"})
-    
+    await sendEmail(email, subject, username, token, 'sendCode');
+    return res.status(200).json({ message: "success" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// forgotPassword function
+export const forgotpassword = async (req, res, next) => {
+  try {
+    const { email, password, code } = req.body;
+
+    // جلب المستخدم مع الحقول الضرورية فقط
+    const user = await userModel.findOne({ email }).select("+password");
+    if (!user) {
+      return next(new AppError('Email not found', 409));
     }
 
-    // forgetpassord function and resign it 
-    export const forgotpassword = async(req,res,next)=>{
-  const {email,password,code}=req.body;
+    if (user.sendCode !== code) {
+      return next(new AppError('Invalid code', 409));
+    }
 
-  const user= await userModel.findOne({email});
-  if(!user){
-    return next(new AppError('email not found', 409));
+    // hash بشكل async لتجنب blocking
+    user.password = await bcrypt.hash(password, parseInt(process.env.SALTROUND));
+    user.sendCode = null;
 
+    await user.save();
+    return res.status(200).json({ message: "success" });
+  } catch (error) {
+    next(error);
   }
-
-  if(user.sendCode != code){
-    return next(new AppError('invalid code', 409));
-
-  }
-  user.password= bcrypt.hashSync(password,parseInt(process.env.SALTROUND));
-  user.sendCode=null;
-  await user.save();
-  return res.status(200).json({message:"success"});
-
-}
+};
 

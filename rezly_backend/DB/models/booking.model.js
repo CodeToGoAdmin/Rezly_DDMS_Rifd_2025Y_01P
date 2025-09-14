@@ -35,6 +35,10 @@ trainer: {
     type: Date,
     default: Date.now,
   },
+  numbersOfMembers:{
+    type:Number,
+    default:1
+  }
 });
 
 const Booking = mongoose.model("Booking", bookingSchema);

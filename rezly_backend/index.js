@@ -1,14 +1,13 @@
 import express from 'express';
 import connectDB from './DB/connection.js'; // استدعاء ملف الاتصال
-const app = express();
+
 const PORT = process.env.PORT || 3000;
 import initApp from './src/initApp.js';
 import 'dotenv/config';
 
-connectDB(); // الاتصال بالداتا بيس
+const app = initApp(); // <-- استدعاء initApp بدون تمرير express
 
-initApp(app,express);
-app.use(express.json());
+
 
 
 
