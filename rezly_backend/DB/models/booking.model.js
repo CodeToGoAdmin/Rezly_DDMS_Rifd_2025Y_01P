@@ -5,11 +5,11 @@ const bookingSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  trainer: {
-    type:String,
-    ref: "User",
-    required: true,
-  },
+trainer: { 
+  type: mongoose.Schema.Types.ObjectId,
+   ref: "User", 
+  required: true 
+},
   date: {
     type: Date,
     required: true,

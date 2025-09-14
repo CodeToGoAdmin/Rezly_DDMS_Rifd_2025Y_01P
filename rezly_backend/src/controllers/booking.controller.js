@@ -2,18 +2,8 @@ import Booking from '../../DB/models/booking.model.js';
 import BookingMember from '../../DB/models/bookingMembers.model.js';
 import userModel from '../../DB/models/user.model.js'
 import mongoose from 'mongoose';
-   import jwt from "jsonwebtoken";
 import { AppError } from '../Utils/catchError.js';
 
-function checkRole(allowedRoles) {
-  return (req, res, next) => {
-    const role = req.query.role;
-    if (!role || !allowedRoles.includes(role)) {
-      return res.status(403).json({ status: 'error', message: 'Access denied' });
-    }
-    next();
-  };
-}
 
 export const getBookings = async (req, res, next) => {
   try {
@@ -147,6 +137,7 @@ export const createBooking = async (req, res, next) => {
     });
 
   } catch (err) {
+     console.error("Booking creation error:", err); // <--- أ
     next(err);
   }
 };
@@ -269,49 +260,96 @@ export const deleteBooking = async (req, res, next) => {
 
 export const filterBookings = async (req, res) => {
   try {
-          const { userId, user } = req;
+    const { userId, user } = req;
     const role = user.role.toLowerCase();
     const { date, trainerId, location } = req.query;
+console.log(userId);
+console.log(role);
+   let query = {};
 
-    // 2️⃣ بناء الـ query حسب الدور
-    let query = {};
-    if (role.toLowerCase() === "admin") {
-      if (trainerId) query.trainer = trainerId;
-    } else if (role.toLowerCase() === "trainer") {
-      query.trainer = userId;
-    } else {
-      // العضو يشوف فقط الحجوزات اللي هو عضو فيها
-      query.members = { $elemMatch: { member: userId } };
-    }
+if (role === "admin") {
+   if (trainerId) query.trainer = new mongoose.Types.ObjectId(trainerId);
+} else if (role === "trainer") {
+  query.trainer = userId;
+} else {
+  query.members = { $elemMatch: { member: userId } };
+}
 
-    if (date) query.date = date;
+if (date) query.date = new Date(date);  // لازم يكون Date object
+
     if (location) query.location = location;
+console.log(query);
+    console.log("Final query:", query);
 
-    // 3️⃣ جلب الحجوزات مع populate آمنة
-    let bookings = await Booking.find(query)
-      .populate("trainer", "name email")
-      .lean();
+    const bookings = await Booking.aggregate([
+      { $match: query },
+      {
+        $lookup: {
+          from: "bookingmembers",        // collection اسمها BookingMember (Mongo يحولها lowercase + جمع)
+          localField: "_id",
+          foreignField: "booking",
+          as: "members"
+        }
+      },
+      {
+        $lookup: {
+          from: "users",                 // ربط الـ trainer
+          localField: "trainer",
+          foreignField: "_id",
+          as: "trainer"
+        }
+      },
+      { $unwind: "$trainer" },           // flatten trainer
+    ]);
+    return res.json({
+      status: "success",
+      data: bookings,
+      metadata: { totalResults: bookings.length, message: "Bookings fetched successfully" },
+      message: "Success"
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      data: [],
+      metadata: { totalResults: 0, message: err.message },
+      message: "Error"
+    });
+  }
+};
 
-    // 4️⃣ التأكد أن members موجودة حتى لو فارغة
-    bookings = bookings.map(b => {
-      if (!b.members) b.members = [];
-      // populate members data manually إذا تحب، مثال:
-      b.members = b.members.map(m => ({
-        memberId: m.member?._id || null,
-        name: m.member?.name || null,
-        email: m.member?.email || null,
-        status: m.status || null
-      }));
-      return b;
+export const calendarView =async (req, res) => {
+  try {
+    const bookings = await Booking.find().populate({
+      path: 'trainer',
+      select: 'userName _id',
+      match: { _id: { $exists: true } } // يتأكد من وجود مدرب
+    }).lean();
+
+    const calendarEvents = bookings.map(b => ({
+      id: b._id,
+      title: b.service + " - " + (b.trainer ? b.trainer.userName : 'Unknown Trainer'),
+      start: `${b.date.toISOString().split('T')[0]}T${b.timeStart}`,
+      end: `${b.date.toISOString().split('T')[0]}T${b.timeEnd}`,
+      extendedProps: {
+        location: b.location,
+        status: b.status,
+        members: b.members || []
+      }
+    }));
+
+    res.json({
+      status: "success",
+      data: calendarEvents,
+      message: "Calendar bookings fetched successfully"
     });
 
-    // 5️⃣ الرد
-    const metadata = { totalResults: bookings.length, message: "Bookings fetched successfully" };
-    return res.json({ status: "success", data: bookings, metadata, message: "Success" });
-
   } catch (err) {
-    const metadata = { message: err.message, totalResults: 0 };
-    return res.status(500).json({ status: "error", data: [], metadata, message: "Error" });
+    console.error('Calendar fetch error:', err);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch calendar bookings",
+      error: err.message
+    });
   }
 };
 

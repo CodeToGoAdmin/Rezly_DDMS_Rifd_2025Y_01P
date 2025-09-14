@@ -5,36 +5,30 @@ import { AppError } from "../../../AppError.js";
 import { sendEmail } from "../../Utils/sendEmail.js";
 import { customAlphabet } from "nanoid";
 import { arabicSlugify } from "../../Utils/ArabicSlug.js";
+import mongoose from 'mongoose';
 
 export const SignUp = async (req, res, next) => {
     const { userName, email, password, phone, gender, midicalIssue, role } = req.body;
 
-        const existingUser = await userModel.findOne({ email });
-        if (existingUser) {
-            return next(new AppError('Email already exists', 409));
-        }
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) return next(new AppError('Email already exists', 409));
 
-        const passwordHashed = await bcrypt.hash(password, parseInt(process.env.SALTROUND));
+    const passwordHashed = await bcrypt.hash(password, parseInt(process.env.SALTROUND));
 
-        const newUser = await userModel.create({
-            userName,
-            email,
-            password: passwordHashed,
-            phone,
-            gender,
-            midicalIssue,
-            role
-        });
-        newUser.slug = arabicSlugify(`${userName.trim()}-${newUser._id.toString()}`);
+    const refreshToken = jwt.sign({ id: new mongoose.Types.ObjectId() }, process.env.REFRESHTOKEN_SECRET, { expiresIn: '30d' });
 
-        // إنشاء refresh token وحفظه في DB مباشرة
-        const refreshToken = jwt.sign(
-            { id: newUser._id },
-            process.env.REFRESHTOKEN_SECRET,
-            { expiresIn: '30d' }
-        );
-        newUser.refreshToken = refreshToken;
-        await newUser.save();
+    const newUser = await userModel.create({
+        userName,
+        email,
+        password: passwordHashed,
+        phone,
+        gender,
+        midicalIssue,
+        role,
+        slug: arabicSlugify(`${userName.trim()}-${new mongoose.Types.ObjectId()}`),
+        refreshToken
+    });
+
      //   const token= jwt.sign({email},process.env.CONFIRMEMAILTOKEN);
      //   const confirmLink = `https://project.onrender.com/auth/confirmEmail/${token}`;
 
@@ -42,12 +36,11 @@ export const SignUp = async (req, res, next) => {
      //   await sendEmail(email,`confirm email from Booking `,userName,token)
 
         //console.log("User created with refresh token:", newUser.refreshToken);
-
-        return res.status(201).json({
-            message: "success",
-            user: newUser,
-            refreshToken
-        });
+    return res.status(201).json({
+        message: "success",
+        user: newUser,
+        refreshToken
+    });
 };
 
 // confirmEmail function :future need the url to the log in page if needed
@@ -76,10 +69,8 @@ export const SignUp = async (req, res, next) => {
 export const SignIn = async (req, res, next) => {
     const { email, password } = req.body;
 
-        const user = await userModel.findOne({ email });
-        if (!user) {
-            return next(new AppError('Email not found', 404));
-        }
+       const user = await userModel.findOne({ email }).select("+password");
+        if (!user) return next(new AppError('Email not found', 404));
 
       //   // check if the user confirmed his email
       //   if (!user.confirmEmail) {
@@ -105,14 +96,15 @@ const match = await bcrypt.compare(password, user.password);
             { expiresIn: '30d' }
         );
         user.refreshToken = refreshToken;
-        await user.save();
+              user.save().catch(err => console.error("Refresh token save failed:", err));
 
         //console.log("User signed in. Refresh token saved:", user.refreshToken);
 
         return res.status(200).json({
+         
             message: "SignIn success",
             token,
-            refreshToken
+            refreshToken,
         });
 
     
