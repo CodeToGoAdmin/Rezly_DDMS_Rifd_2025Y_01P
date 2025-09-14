@@ -2,6 +2,7 @@
 
 body{
   background-color: #F8F9FA;
+  overflow-x: hidden
 }
 button:focus {
   outline: none !important;

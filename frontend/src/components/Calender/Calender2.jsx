@@ -171,15 +171,16 @@ const handleSaveEvent = () => {
               <div className="relative">
   <button
     onClick={() => setShowDatePicker(!showDatePicker)}
-    className="bg-red-500 w-[147px] h-[32px] px-[8px] py-2 rounded-lg font-semibold flex items-center gap-x-[8px] !border-0 !outline-nonebg-white w-auto h-[32px] px-[8px] py-2 rounded-[8px] font-semibold flex items-center gap-x-[8px] !border-0 !outline-none"
+    className="45 w-[147px] h-[32px] px-[8px] py-2 rounded-lg font-semibold flex items-center gap-x-[8px] !border-0 !outline-nonebg-white w-auto h-[32px] px-[8px] py-2 rounded-[8px] font-semibold flex items-center gap-x-[8px] !border-0 !outline-none"
   >
     <img src={CalenderIcon} alt="calender" />
-    <span className="font-cairo text-[14px] font-[700]">
-      {currentDate.toLocaleDateString("ar-en", {
-        day: "numeric",
-        month: "short",
-      })}
-    </span>
+  <span className="font-cairo text-[14px] font-bold text-black">
+  {currentDate.toLocaleDateString("ar-en", {
+    day: "numeric",
+    month: "short",
+  })}
+</span>
+
     <img src={DownArrowIcon} alt="downarrow" />
   </button>
 
@@ -218,7 +219,6 @@ const handleSaveEvent = () => {
         <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
   <div className="bg-[#ffffff] rounded-2xl p-6 shadow-lg w-[400px]">
     <h2 className="text-lg font-bold mb-4">مودال مع خلفية معتمة</h2>
-            <p>فتحتيني لما كبستي على الصورة 😍</p>
 
             <button
               onClick={() => setOpen(false)}
