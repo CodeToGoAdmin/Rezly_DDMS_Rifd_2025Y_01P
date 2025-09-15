@@ -80,9 +80,16 @@ function convertToMinutes(timeStr) {
 
 export const createBooking = async (req, res, next) => {
   try {
-    const {  user } = req;
+ 
 
     const { service, trainerId, date, timeStart, timeEnd, location ,numberOfMembers} = req.body;
+if (req.user.role !== "Admin") {
+  return res.status(403).json({
+    status: "fail",
+    message: "Only admins can create bookings"
+  });
+}
+
 
     const trainer = await userModel.findById(trainerId).lean();
     if (!trainer || trainer.role.toLowerCase() !== "trainer") {
@@ -381,19 +388,16 @@ console.log(userId);
         message: "Booking not found"
       });
     }
-console.log(booking.trainer.toString() );
-    // التحقق من الصلاحيات حسب الدور
-    if (role === "trainer" && booking.trainer.toString() !== userId.toString() ) {
-            console.log("gmkfjmgjkfd");
 
+  
+    if (role === "trainer" && booking.trainer.toString() !== userId.toString() ) {
+       
       return res.status(403).json({ status: "error", message: "Not authorized" });
 
     }
 
     if (role === "member") {
-            console.log("gmkfjmgjkfd");
-      console.log("gmkfjmgjkfd");
-      console.log("gmkfjmgjkfd");
+    
 
       const memberBooking = await BookingMember.findOne({ booking: bookingId, member: userId });
       if (!memberBooking) {
@@ -402,15 +406,7 @@ console.log(booking.trainer.toString() );
     }
 
     if (!["admin", "trainer", "member"].includes(role)) {
-            console.log("gmkfjmgjkfd");
-      console.log("gmkfjmgjkfd");
-      console.log("gmkfjmgjkfd");
-      console.log("gmkfjmgjkfd");
-      console.log("gmkfjmgjkfd");
-      console.log("gmkfjmgjkfd");
-      console.log("gmkfjmgjkfd");
-      console.log("gmkfjmgjkfd");
-
+            
       return res.status(403).json({ status: "error", message: "Not authorized" });
     }
 
@@ -431,3 +427,10 @@ console.log(booking.trainer.toString() );
     return next(new AppError(err.message, 500));
   }
 };
+export default {
+  createBooking,
+  getBookings,
+  getBookingDetails,
+  updateBooking,
+  deleteBooking
+}

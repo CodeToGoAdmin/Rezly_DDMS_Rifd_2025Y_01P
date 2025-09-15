@@ -47,7 +47,14 @@ const userSchema= new Schema({
         },
          refreshToken: { 
             type: String 
-        }
+        },
+        slug: { 
+            type: String, 
+        },
+         sendCode:{
+        type:String,
+        default:null
+    },
 },
 { timestamps:true,
     });

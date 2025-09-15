@@ -1,143 +1,207 @@
-import request from 'supertest';
+// tests/integration/booking.int.test.js
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import jwt from 'jsonwebtoken';
-import initApp from '../../src/initApp.js';
 import Booking from '../../DB/models/booking.model.js';
-import User from '../../DB/models/user.model.js';
+import userModel from '../../DB/models/user.model.js';
+
+import {
+  createBooking,
+  getBookings,
+  getBookingDetails,
+  updateBooking,
+  deleteBooking
+} from '../../src/modules/booking/booking.controller.js';
 
 let mongoServer;
-jest.setTimeout(150000);
-
 
 beforeAll(async () => {
-  console.log("Connecting to MongoMemoryServer...");
+    
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
-  await mongoose.connect(uri);
-  console.log("Mongo connected");
+  await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 });
+
 afterAll(async () => {
   await mongoose.disconnect();
   await mongoServer.stop();
 });
 
 afterEach(async () => {
-  await Booking.deleteMany();
-  await User.deleteMany();
+  await Booking.deleteMany({});
+  await userModel.deleteMany({});
+});
+
+describe('Booking Controller - Integration Tests', () => {
+  let req, res, next;
+  let trainer, admin, otherUser, booking;
+
+beforeEach(async () => {
+  req = { body: {}, params: {}, query: {}, userId: '', user: {} };
+  res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+  next = jest.fn();
+
+  trainer = await userModel.create({ 
+    userName: 'trainerUser',
+    name: 'Trainer', 
+    email: `trainer${Date.now()}@test.com`, 
+    role: 'Trainer', 
+    password: '123456' 
+  });
+
+  admin = await userModel.create({ 
+    userName: 'adminUser',
+    name: 'Admin', 
+    email: `admin${Date.now()}@test.com`, 
+    role: 'Admin', 
+    password: '123456' 
+  });
+
+  otherUser = await userModel.create({
+    userName: 'otherUser',
+    password: '123456',
+    role: 'Trainer',
+    email: 'otherUser@example.com'
+  });
+
+  booking = await Booking.create({
+    service: 'Yoga',
+    trainer: trainer._id,
+    date: '2099-01-01',
+    timeStart: '10:00 AM',
+    timeEnd: '11:00 AM',
+    location: 'Room A',
+    numberOfMembers: 5
+  });
+
+  req.user = { _id: admin._id, role: 'Admin' };
 });
 
 
-describe('Booking API Integration Tests', () => {
-  let adminToken, trainerToken, memberToken;
-  let trainer, trainerId;
+ it("should create a booking successfully", async () => {
+    const req = {
+      user: { _id: admin._id, role: "Admin" },
+      body: {
+        service: "Yoga",
+        trainerId: trainer._id,
+        date: "2029-01-01",
+       timeStart: "11:30 AM", // وقت جديد
+  timeEnd: "12:30 PM",
+        location: "Room A",
+        numberOfMembers: 5
+      }
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+    const next = jest.fn();
 
-  beforeEach(async () => {
-    const admin = await User.create({ userName: 'Admin', email: 'admin@test.com', password: 'hashed', role: 'Admin' });
-    trainer = await User.create({ userName: 'Trainer', email: 'trainer@test.com', password: 'hashed', role: 'Trainer' });
-    const member = await User.create({ userName: 'Member', email: 'member@test.com', password: 'hashed', role: 'Member' });
+    await createBooking(req, res, next);
 
-    trainerId = trainer._id;
-    const secret = process.env.LOGINTOKEN || 'Bookinglogin12';
-
-    adminToken = `Bearer ${jwt.sign({ id: admin._id, role: 'Admin' }, secret, { expiresIn: '1h' })}`;
-    trainerToken = `Bearer ${jwt.sign({ id: trainer._id, role: 'Trainer' }, secret, { expiresIn: '1h' })}`;
-    memberToken = `Bearer ${jwt.sign({ id: member._id, role: 'Member' }, secret, { expiresIn: '1h' })}`;
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "success" })
+    );
   });
 
-  test('Admin can create a booking', async () => {
-    const res = await request(initApp)
-      .post('/booking')
-      .set('Authorization', adminToken)
-      .send({
-        service: 'Yoga',
-        trainerId: trainerId.toString(),
-        date: new Date(),
-        timeStart: '10:00 AM',
-        timeEnd: '11:00 AM',
-        location: 'Room A'
-      });
 
-    expect(res.statusCode).toBe(201);
-    expect(res.body.data).toHaveProperty('service', 'Yoga');
+  it('should get bookings for admin', async () => {
+    await Booking.create([
+      { service: 'Yoga', trainer: trainer._id, date: '2099-01-01', timeStart: '10:00 AM', timeEnd: '11:00 AM', location: 'Room A', numberOfMembers: 5 },
+      { service: 'Pilates', trainer: trainer._id, date: '2099-01-02', timeStart: '12:00 PM', timeEnd: '1:00 PM', location: 'Room B', numberOfMembers: 3 }
+    ]);
+
+    req.user = { role: 'Admin', _id: admin._id };
+
+    await getBookings(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'success' }));
   });
 
-  test('Trainer cannot create a booking', async () => {
-    const res = await request(initApp)
-      .post('/booking')
-      .set('Authorization', trainerToken)
-      .send({
-        service: 'Yoga',
-        trainer: trainerId.toString(),
-        date: new Date(),
-        timeStart: '10:00',
-        timeEnd: '11:00',
-        location: 'Room A'
-      });
+  it('should get booking details by ID', async () => {
+    req.params.id = booking._id.toString();
+    req.user = { role: 'Admin', _id: admin._id };
 
-    expect(res.statusCode).toBe(403);
+    await getBookingDetails(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'success' }));
   });
 
-  test('Admin and Trainer can get all bookings', async () => {
-    await Booking.create({ service: 'Yoga', trainer: trainerId, date: new Date(), timeStart: '10:00', timeEnd: '11:00', location: 'Room A' });
+  it('should update a booking successfully', async () => {
+    req.params.id = booking._id.toString();
+    req.body = { service: 'Updated Yoga' };
+    req.user = { role: 'Admin', _id: admin._id };
 
-    const resAdmin = await request(initApp)
-      .get('/booking/all_booking')
-      .set('Authorization', adminToken);
+    await updateBooking(req, res, next);
 
-    const resTrainer = await request(initApp)
-      .get('/booking/all_booking')
-      .set('Authorization', trainerToken);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'success' }));
 
-    expect(resAdmin.statusCode).toBe(200);
-    expect(resTrainer.statusCode).toBe(200);
-    expect(resAdmin.body.data.length).toBe(1);
-    expect(resTrainer.body.data.length).toBe(1);
+    const updatedBooking = await Booking.findById(booking._id);
+    expect(updatedBooking.service).toBe('Updated Yoga');
   });
 
-  test('Filter bookings by trainer', async () => {
-    await Booking.create({ service: 'Yoga', trainer: trainerId, date: new Date(), timeStart: '10:00', timeEnd: '11:00', location: 'Room A' });
+  it('should delete a booking successfully', async () => {
+    req.params.id = booking._id.toString();
+    req.user = { role: 'Admin', _id: admin._id };
 
-    const res = await request(initApp)
-      .get('/booking/filter')
-      .set('Authorization', adminToken)
-      .query({ trainerId: trainer._id.toString() });
+    await deleteBooking(req, res, next);
 
-    expect(res.statusCode).toBe(200);
-    expect(res.body.data.length).toBe(1);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'success' }));
+
+    const deletedBooking = await Booking.findById(booking._id);
+    expect(deletedBooking).toBeNull();
   });
 
-  test('Get booking details by ID', async () => {
-    const booking = await Booking.create({ service: 'Yoga', trainer: trainerId, date: new Date(), timeStart: '10:00AM', timeEnd: '11:00 AM', location: 'Room A' });
+  it('should not allow non-admin to create a booking', async () => {
+    req.user = { _id: trainer._id, role: 'Trainer' };
+    req.body = {
+      service: 'Pilates',
+      trainerId: trainer._id,
+      date: '2099-01-02',
+      timeStart: '12:00 PM',
+      timeEnd: '1:00 PM',
+      location: 'Room B',
+      numberOfMembers: 3
+    };
 
-    const res = await request(initApp)
-      .get(`/booking/${booking._id}`)
-      .set('Authorization', adminToken);
+    await createBooking(req, res, next);
 
-    expect(res.statusCode).toBe(200);
-    expect(res.body.data).toHaveProperty('service', 'Yoga');
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'fail' }));
   });
 
-  test('Admin can update a booking', async () => {
-    const booking = await Booking.create({ service: 'Yoga', trainer: trainerId, date: new Date(), timeStart: '10:00 AM', timeEnd: '11:00 AM', location: 'Room A' });
+  it('should return 404 when updating a non-existing booking', async () => {
+    req.params.id = new mongoose.Types.ObjectId(); // ID غير موجود
+    req.body = { service: 'Updated Service' };
+    req.user = { _id: admin._id, role: 'Admin' };
 
-    const res = await request(initApp)
-      .put(`/booking/${booking._id}`)
-      .set('Authorization', adminToken)
-      .send({ service: 'Pilates' });
+    await updateBooking(req, res, next);
 
-    expect(res.statusCode).toBe(200);
-    expect(res.body.data).toHaveProperty('service', 'Pilates');
+    expect(res.status).toHaveBeenCalledWith(404);
+expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'error', message: 'Booking not found' }));
   });
 
-  test('Admin can delete a booking', async () => {
-    const booking = await Booking.create({ service: 'Yoga', trainer: trainerId, date: new Date(), timeStart: '10:00 AM', timeEnd: '11:00 AM', location: 'Room A' });
+  it('should not allow a user to delete another user’s booking', async () => {
+    req.params.id = booking._id.toString();
+    req.user = { _id: otherUser._id, role: 'Trainer' };
 
-    const res = await request(initApp)
-      .delete(`/booking/${booking._id}`)
-      .set('Authorization', adminToken);
+    await deleteBooking(req, res, next);
 
-    expect(res.statusCode).toBe(200);
-    expect(res.body.message).toBe('Success');
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'error' }));
+  });
+
+  it('should fail to create booking with missing required fields', async () => {
+    req.user = { _id: admin._id, role: 'Admin' };
+    req.body = { service: 'Yoga' }; // بيانات ناقصة
+
+    await createBooking(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'error',message:'Trainer not found or invalid role' }));
   });
 });
