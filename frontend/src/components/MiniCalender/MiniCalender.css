@@ -1,4 +1,3 @@
-/* ---------- إعدادات عامة react-datepicker ---------- */
 .react-datepicker {
   border: none !important;
   box-shadow: none !important;
@@ -7,6 +6,7 @@
   width: 100%;
   direction: rtl;
 }
+
 .selectDateButton {
   background-color: #6A0EAD !important;
   color: #FFF !important;
@@ -54,10 +54,12 @@
 .react-datepicker__day-names {
   direction: rtl !important;
 }
+
 .react-datepicker__week {
   direction: ltr !important;
 
 }
+
 .react-datepicker__day {
   color: #6B7280 !important;
 }
@@ -93,14 +95,13 @@
   height: 38px !important;
 }
 
-/* ---------- التعديلات الجديدة للقياسات ---------- */
-/* الحاوية الرئيسية للكاليندر داخل الديف */
+
 .calendar-inside,
 .mini-calendar-card .react-datepicker__month-container,
 .mini-calendar-card .react-datepicker__month,
 .mini-calendar-card .react-datepicker__header {
-  width: 100% !important; /* تمتد على كامل عرض الديف الداخلي */
-  box-sizing: border-box;  /* حساب padding والحدود ضمن القياس */
+  width: 100% !important;
+  box-sizing: border-box;
   margin: 0 !important;
   padding: 0 !important;
 }
@@ -127,16 +128,13 @@
   margin: 0 !important;
 }
 
-/* الكاليندر نفسه */
 .mini-calendar-card .react-datepicker__month {
-  height: 213px !important; /* ارتفاع الكاليندر حسب الفيجما */
+  height: 213px !important;
   display: flex !important;
-  flex-wrap: wrap !important; /* يضمن أن كل الأيام تتوزع بشكل كامل */
-  justify-content: space-between !important; /* توزيع الأيام على كامل العرض */
+  flex-wrap: wrap !important;
+  justify-content: space-between !important;
 }
-/* الهيدر */
+
 .mini-calendar-card .react-datepicker__header {
-  height: 32px !important; /* ارتفاع الهيدر حسب الفيجما */
+  height: 32px !important;
 }
-
-

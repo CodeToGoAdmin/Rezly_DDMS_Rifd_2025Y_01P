@@ -9,28 +9,63 @@
   overflow: hidden !important;
 }
 
-.grid-cols-\[50px_1fr\] > div:first-child { background-color: #fff; }
-.grid-cols-\[50px_1fr\] > div:last-child { display: flex; align-items: center; justify-content: space-between; background-color: white; }
-
-.fc .fc-timegrid-axis { border: none !important; background: transparent !important; text-align: right; padding-right: 8px; }
-.fc .fc-timegrid-axis .fc-scrollgrid-section-liquid,
-.fc .fc-timegrid-axis .fc-timegrid-slot-frame,
-.fc .fc-timegrid-axis .fc-scrollgrid-section > * { border: none !important; box-shadow: none !important; background: transparent !important; }
-
-.fc-direction-rtl .fc-timegrid-slot-label { border: none !important; background: transparent !important; box-shadow: none !important; }
-.fc .fc-timegrid-slot-label-frame { background: transparent !important; display: flex;
-  align-items: flex-start;   /* من الأعلى */
-  justify-content: flex-end; /* لأن الاتجاه RTL */
-  padding-top: 0px;          /* مسافة صغيرة جدًا عن الخط */
-  height: 100%;
-  box-sizing: border-box;    /* يتعامل مع البادينغ صح */
+.grid-cols-\[50px_1fr\]>div:first-child {
+  background-color: #fff;
 }
 
-.fc .fc-timegrid-slot-label { font-weight: 600; color: #374151; margin-top: 0 !important;
+.grid-cols-\[50px_1fr\]>div:last-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: white;
+}
+
+.fc .fc-timegrid-axis {
+  border: none !important;
+  background: transparent !important;
+  text-align: right;
+  padding-right: 8px;
+}
+
+.fc .fc-timegrid-axis .fc-scrollgrid-section-liquid,
+.fc .fc-timegrid-axis .fc-timegrid-slot-frame,
+.fc .fc-timegrid-axis .fc-scrollgrid-section>* {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.fc-direction-rtl .fc-timegrid-slot-label {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.fc .fc-timegrid-slot-label-frame {
+  background: transparent !important;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding-top: 0px;
+  padding-left: 12px;
+  height: 100%;
+  box-sizing: border-box;
+
+}
+
+.fc .fc-timegrid-slot-label {
+  font-weight: 600;
+  color: #374151;
+  margin-top: 0 !important;
   padding: 0 !important;
-  line-height: 1;           /* لرفع رقم الساعة على مستوى الخط */
- }
-.fc .fc-timegrid-slot { height: 64px !important; }
+  line-height: 1;
+  /* عشان رقم الساعة يبين فوق عند بداية كل صف */
+}
+
+.fc .fc-timegrid-slot {
+  height: 64px !important;
+  position: relative;
+}
 
 .fc .fc-timegrid-event,
 .fc .fc-event {
@@ -39,25 +74,28 @@
   box-shadow: none !important;
   position: relative;
   z-index: 1 !important;
-  margin:12px;
+  margin: 12px;
 }
 
 
-.fc .fc-scroller-liquid-absolute { min-height: 0 !important; }
-.fc-col-header { display: none !important; }
+.fc .fc-scroller-liquid-absolute {
+  min-height: 0 !important;
+}
+
+.fc-col-header {
+  display: none !important;
+}
 
 
 /* الغاء الحد الأيمن لكل الأعمدة الأخيرة في FullCalendar */
-.fc-theme-standard .fc-scrollgrid-section > *:last-child {
+.fc-theme-standard .fc-scrollgrid-section>*:last-child {
   border-right: none !important;
 }
 
-/* للـ dayGrid */
 .fc-theme-standard .fc-daygrid-day:last-child {
   border-right: none !important;
 }
 
-/* للـ timeGrid */
 .fc-theme-standard .fc-timegrid-col:last-child {
   border-right: none !important;
 }
@@ -65,14 +103,17 @@
 /* نتحكم بالحدث نفسه */
 .fc-timegrid-event {
   width: 138px !important;
-  height: 36px !important;
-  display: inline-block;        /* يسمح بالاصطفاف بجانب بعض */
-  margin-left: 12px;            /* المسافة بين الأحداث */
-  overflow: hidden;
+  display: block !important;
+  /* عشان يقدر يمتد إذا الحدث أكثر من ساعة */
+  overflow: visible !important;
   border-radius: 6px;
+  margin: 0 12px;
+  position: absolute !important;
 }
 
-/* الغاء أي سكّول داخل FullCalendar */
+
+
+/* الغاء أي سكرول داخل FullCalendar */
 .fc .fc-scroller {
   overflow: hidden !important;
 }
@@ -81,13 +122,12 @@
   overflow: hidden !important;
 }
 
-/* إذا بقي يظهر scrollbar في الوقت نفسه */
 .fc-timegrid-slots {
   overflow: hidden !important;
 }
 
 /* إزالة الخط أو الحدود من العمود الفارغ فوق الساعات */
-.fc .fc-timegrid-axis .fc-scrollgrid-section > :first-child {
+.fc .fc-timegrid-axis .fc-scrollgrid-section> :first-child {
   border: none !important;
   background: transparent !important;
   box-shadow: none !important;
@@ -103,3 +143,14 @@
   background: transparent !important;
 }
 */
+
+.fc-timegrid-body {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  white-space: nowrap !important;
+}
+
+.fc-timegrid-cols {
+  display: inline-flex !important;
+  min-width: max-content !important;
+}
