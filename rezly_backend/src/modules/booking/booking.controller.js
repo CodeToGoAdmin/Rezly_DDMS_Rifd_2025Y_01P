@@ -12,9 +12,9 @@ export const getBookings = async (req, res, next) => {
     let bookingsQuery;
 
     if (role === "admin") {
-      bookingsQuery = Booking.find().select("_id name date trainer"); // projection
-    } else if (role === "trainer") {
-      bookingsQuery = Booking.find({ trainer: userId }).select("_id name date trainer");
+      bookingsQuery = Booking.find().select("_id name date coach"); // projection
+    } else if (role === "coach") {
+      bookingsQuery = Booking.find({ coach: userId }).select("_id name date coach");
     } else {
       // member
       const memberBookings = await BookingMember.find({ member: userId })
@@ -22,7 +22,7 @@ export const getBookings = async (req, res, next) => {
         .lean();
 
       const bookingIds = memberBookings.map(bm => bm.booking);
-      bookingsQuery = Booking.find({ _id: { $in: bookingIds } }).select("_id name date trainer");
+      bookingsQuery = Booking.find({ _id: { $in: bookingIds } }).select("_id name date coach");
     }
 
     // جلب الحجوزات مع lean()
@@ -80,70 +80,104 @@ function convertToMinutes(timeStr) {
 
 export const createBooking = async (req, res, next) => {
   try {
- 
+  let { service, coachId, date, timeStart, timeEnd, location, numberOfMembers, members } = req.body;
 
-    const { service, trainerId, date, timeStart, timeEnd, location ,numberOfMembers} = req.body;
-if (req.user.role !== "Admin") {
-  return res.status(403).json({
-    status: "fail",
-    message: "Only admins can create bookings"
-  });
+if (req.user.role === "Admin") {
+console.log("admin");
+  if (!coachId) {
+    return res.status(400).json({ status: "error", message: "Coach ID is required" });
+  }
+} else if (req.user.role === "Coach") {
+  // الكوتش يقدر ينشئ حجز لنفسه فقط
+  coachId = req.user._id; // صح الآن
+} else {
+  return res.status(403).json({ status: "error", message: "Not authorized to create bookings" });
 }
 
-
-    const trainer = await userModel.findById(trainerId).lean();
-    if (!trainer || trainer.role.toLowerCase() !== "trainer") {
-      return res.status(400).json({ status: "error", message: "Trainer not found or invalid role" });
+    // ===== تحقق من الكوتش =====
+    const coach = await userModel.findById(coachId).lean();
+    if (!coach || coach.role.toLowerCase() !== "coach") {
+      return res.status(400).json({ status: "error", message: "Coach not found or invalid role" });
     }
 
-    const now = new Date();
+    // ===== تحقق من التاريخ والوقت =====
     const bookingDate = new Date(date);
     if (isNaN(bookingDate.getTime())) {
       return res.status(400).json({ status: "error", message: "Invalid date format" });
     }
-    if (bookingDate < new Date(now.toDateString())) { // لا تسمح بالتواريخ الماضية
-      return res.status(400).json({ status: "error", message: "Booking date cannot be in the past" });
+
+    // دمج التاريخ مع الوقت
+    const startDateTime = new Date(`${date}T${timeStart}`);
+    const endDateTime = new Date(`${date}T${timeEnd}`);
+    if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+      return res.status(400).json({ status: "error", message: "Invalid start or end time" });
     }
-
-    const startMinutes = convertToMinutes(timeStart);
-    const endMinutes = convertToMinutes(timeEnd);
-
-    if (endMinutes <= startMinutes) {
+    if (endDateTime <= startDateTime) {
       return res.status(400).json({ status: "error", message: "End time must be after start time" });
     }
-
-    // ===== 5️⃣ تحقق من التعارض مع الحجوزات الحالية =====
-    const existingBookings = await Booking.find({ trainer: trainerId, date }).lean();
-    const conflict = existingBookings.some(b => {
-      const s = convertToMinutes(b.timeStart);
-      const e = convertToMinutes(b.timeEnd);
-      return Math.max(s, startMinutes) < Math.min(e, endMinutes);
-    });
-
-    if (conflict) {
-      return res.status(400).json({ status: "error", message: "Trainer has a conflicting booking at this time" });
+    const now = new Date();
+    if (startDateTime < now) {
+      return res.status(400).json({ status: "error", message: "Booking time cannot be in the past" });
     }
- const roomBookings = await Booking.find({ location, date }).lean();
+
+    // ===== تحقق من التعارض مع حجوزات الكوتش =====
+    const existingBookings = await Booking.find({ coach: coachId, date: bookingDate }).lean();
+    const conflict = existingBookings.some(b => {
+      const s = new Date(b.timeStart);
+      const e = new Date(b.timeEnd);
+      return Math.max(s, startDateTime) < Math.min(e, endDateTime);
+    });
+    if (conflict) {
+      return res.status(400).json({ status: "error", message: "Coach has a conflicting booking at this time" });
+    }
+
+    // ===== تحقق من تعارض الغرفة =====
+    const roomBookings = await Booking.find({ location, date: bookingDate }).lean();
     const roomConflict = roomBookings.some(b => {
-      const s = convertToMinutes(b.timeStart);
-      const e = convertToMinutes(b.timeEnd);
-      return Math.max(s, startMinutes) < Math.min(e, endMinutes);
+      const s = new Date(b.timeStart);
+      const e = new Date(b.timeEnd);
+      return Math.max(s, startDateTime) < Math.min(e, endDateTime);
     });
     if (roomConflict) {
       return res.status(400).json({ status: "error", message: "Room is already booked at this time" });
     }
 
+    // ===== إنشاء الحجز =====
     const newBooking = await Booking.create({
       service,
-      trainer: trainerId,
-      date,
-      timeStart,
-      timeEnd,
-      startMinutes,
-      endMinutes,
+      coach: coachId,
+      date: bookingDate,
+      timeStart: startDateTime,
+      timeEnd: endDateTime,
       location,
       numberOfMembers
     });
+
+    // ===== التحقق من الأعضاء وإضافتهم =====
+    if (Array.isArray(members) && members.length > 0) {
+      const validMembers = [];
+
+      for (const memberId of members) {
+        if (!mongoose.Types.ObjectId.isValid(memberId)) continue;
+        const member = await userModel.findById(memberId).lean();
+        if (member && member.role.toLowerCase() === "member") validMembers.push(memberId);
+      }
+
+      if (validMembers.length > 0) {
+        // منع التكرار
+        const existingBookingMembers = await BookingMember.find({ booking: newBooking._id }).lean();
+        const existingMemberIds = existingBookingMembers.map(bm => bm.member.toString());
+
+        const membersToAdd = validMembers.filter(id => !existingMemberIds.includes(id));
+        if (membersToAdd.length > 0) {
+          const bookingMembers = membersToAdd.map(memberId => ({
+            booking: newBooking._id,
+            member: memberId
+          }));
+          await BookingMember.insertMany(bookingMembers);
+        }
+      }
+    }
 
     return res.status(201).json({
       status: "success",
@@ -152,17 +186,18 @@ if (req.user.role !== "Admin") {
     });
 
   } catch (err) {
-     console.error("Booking creation error:", err); // <--- أ
+    console.error("Booking creation error:", err);
     next(err);
   }
 };
 
+
+//compress, morgan login
+
 export const updateBooking = async (req, res, next) => {
   try {
-       const { userId, user } = req;
+    const { userId, user } = req;
     const role = user.role.toLowerCase();
-console.log(req.user);
-console.log(role);
 
     const bookingId = req.params.id;
     if (!mongoose.Types.ObjectId.isValid(bookingId)) {
@@ -173,27 +208,24 @@ console.log(role);
     if (!booking) {
       return res.status(404).json({ status: "error", message: "Booking not found" });
     }
-console.log(booking.trainer.toString() );
-console.log(userId.toString);
-    // ===== 3️⃣ صلاحية التحديث =====
-    if (
-      role.toLowerCase() !== "admin" && !(role.toLowerCase() === "trainer" && booking.trainer.toString() === userId.toString())
-    ) {
-          
 
+    // ===== صلاحية التحديث =====
+    if (
+      role !== "admin" && !(role === "coach" && booking.coach.toString() === userId.toString())
+    ) {
       return res.status(403).json({ status: "error", message: "Not authorized" });
     }
 
-    // ===== 4️⃣ البيانات الجديدة =====
-    const { service, trainerId, status, date, timeStart, timeEnd, location } = req.body;
-    const updatedTrainerId = trainerId || booking.trainer;
+    // ===== البيانات الجديدة =====
+    const { service, coachId, status, date, timeStart, timeEnd, location, members } = req.body;
+    const updatedCoachId = coachId || booking.coach;
 
-    const trainer = await userModel.findById(updatedTrainerId).lean();
-    if (!trainer || trainer.role.toLowerCase() !== "trainer") {
-      return res.status(400).json({ status: "error", message: "Trainer not found or invalid role" });
+    const coach = await userModel.findById(updatedCoachId).lean();
+    if (!coach || coach.role.toLowerCase() !== "coach") {
+      return res.status(400).json({ status: "error", message: "Coach not found or invalid role" });
     }
 
-    // ===== 5️⃣ التحقق من التاريخ والوقت =====
+    // ===== التحقق من التاريخ والوقت =====
     const bookingDate = date ? new Date(date) : new Date(booking.date);
     if (isNaN(bookingDate.getTime())) {
       return res.status(400).json({ status: "error", message: "Invalid date format" });
@@ -209,8 +241,8 @@ console.log(userId.toString);
       return res.status(400).json({ status: "error", message: "End time must be after start time" });
     }
 
-    // ===== 6️⃣ تحقق من التعارض =====
-    const existingBookings = await Booking.find({ trainer: updatedTrainerId, date: bookingDate.toISOString().split('T')[0] }).lean();
+    // ===== تحقق من التعارض =====
+    const existingBookings = await Booking.find({ coach: updatedCoachId, date: bookingDate.toISOString().split('T')[0] }).lean();
     const conflict = existingBookings.some(b => {
       if (b._id.toString() === bookingId) return false; // تجاهل الحجز الحالي
       const s = convertToMinutes(b.timeStart);
@@ -219,16 +251,46 @@ console.log(userId.toString);
     });
 
     if (conflict) {
-      return res.status(400).json({ status: "error", message: "Trainer has a conflicting booking at this time" });
+      return res.status(400).json({ status: "error", message: "Coach has a conflicting booking at this time" });
     }
 
-    // ===== 7️⃣ تحديث الحجز =====
+    // ===== تجهيز التحديث =====
+    const updateData = {
+      service,
+      coach: updatedCoachId,
+      status,
+      date,
+      timeStart,
+      timeEnd,
+      startMinutes,
+      endMinutes,
+      location
+    };
+
+    // ===== تحديث الحجز =====
     const updatedBooking = await Booking.findByIdAndUpdate(
       bookingId,
-      { service, trainer: updatedTrainerId, status, date, timeStart, timeEnd, startMinutes, endMinutes, location },
+      updateData,
       { new: true, runValidators: true, lean: true }
     );
 
+    // ===== تحديث الأعضاء في BookingMember =====
+    if (members && Array.isArray(members)) {
+      // جلب الأعضاء الحاليين
+      const currentMembers = await BookingMember.find({ booking: bookingId }).lean();
+      const currentIds = currentMembers.map(m => m.member.toString());
+      const newIds = members.map(id => id.toString());
+
+      // أعضاء للإضافة
+      const toAdd = newIds.filter(id => !currentIds.includes(id));
+      for (const memberId of toAdd) {
+        await BookingMember.create({ booking: bookingId, member: memberId });
+      }
+
+      // أعضاء للحذف
+      const toRemove = currentIds.filter(id => !newIds.includes(id));
+      await BookingMember.deleteMany({ booking: bookingId, member: { $in: toRemove } });
+    }
 
     return res.status(200).json({ status: "success", data: updatedBooking, message: "Booking updated successfully" });
 
@@ -237,6 +299,7 @@ console.log(userId.toString);
   }
 };
 
+//typescript//singlton and design principles
 export const deleteBooking = async (req, res, next) => {
   try {
     const { user, userId } = req;
@@ -268,20 +331,19 @@ export const deleteBooking = async (req, res, next) => {
   }
 };
 
-
 export const filterBookings = async (req, res) => {
   try {
     const { userId, user } = req;
     const role = user.role.toLowerCase();
-    const { date, trainerId, location } = req.query;
+    const { date, coachId, location } = req.query;
 console.log(userId);
 console.log(role);
    let query = {};
 
 if (role === "admin") {
-   if (trainerId) query.trainer = new mongoose.Types.ObjectId(trainerId);
-} else if (role === "trainer") {
-  query.trainer = userId;
+   if (coachId) query.coach = new mongoose.Types.ObjectId(coachId);
+} else if (role === "coach") {
+  query.coach = userId;
 } else {
   query.members = { $elemMatch: { member: userId } };
 }
@@ -304,13 +366,13 @@ console.log(query);
       },
       {
         $lookup: {
-          from: "users",                 // ربط الـ trainer
-          localField: "trainer",
+          from: "users",                 // ربط الـ coach
+          localField: "coach",
           foreignField: "_id",
-          as: "trainer"
+          as: "coach"
         }
       },
-      { $unwind: "$trainer" },           // flatten trainer
+      { $unwind: "$coach" },           // flatten coach
     ]);
     return res.json({
       status: "success",
@@ -332,20 +394,20 @@ export const calendarView = async (req, res) => {
   try {
     const filter = {};
 
-    // إذا المستخدم دوره "trainer" رجّع حجوزاته فقط
-    if (req.user.role?.toLowerCase() === "trainer") {
-      filter.trainer = req.user._id;
+    // إذا المستخدم دوره "coach" رجّع حجوزاته فقط
+    if (req.user.role?.toLowerCase() === "coach") {
+      filter.coach = req.user._id;
     }
 console.log(filter);
     const bookings = await Booking.find(filter)
-      .select("date timeStart timeEnd trainer")
+      .select("date timeStart timeEnd coach")
       .lean();
 
     const calendarEvents = bookings.map(b => ({
       start: `${b.date.toISOString().split('T')[0]}T${b.timeStart}`,
       end: `${b.date.toISOString().split('T')[0]}T${b.timeEnd}`,
       date: b.date.toISOString().split('T')[0],
-      trainerId: b.trainer, // ممكن تحتاجه بالفرونت
+      coachId: b.coach, // ممكن تحتاجه بالفرونت
     }));
 
     res.json({
@@ -390,7 +452,7 @@ console.log(userId);
     }
 
   
-    if (role === "trainer" && booking.trainer.toString() !== userId.toString() ) {
+    if (role === "coach" && booking.coach.toString() !== userId.toString() ) {
        
       return res.status(403).json({ status: "error", message: "Not authorized" });
 
@@ -405,7 +467,7 @@ console.log(userId);
       }
     }
 
-    if (!["admin", "trainer", "member"].includes(role)) {
+    if (!["admin", "coach", "member"].includes(role)) {
             
       return res.status(403).json({ status: "error", message: "Not authorized" });
     }
@@ -427,6 +489,66 @@ console.log(userId);
     return next(new AppError(err.message, 500));
   }
 };
+export const cancelBooking = async (req, res, next) => {
+  try {
+    const { userId, user } = req; // من الـ middleware
+    const role = user.role.toLowerCase();
+    const bookingId = req.params.bookingId;
+console.log(bookingId);
+    if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid booking ID"
+      });
+    }
+
+    // جلب الحجز
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({
+        status: "error",
+        message: "Booking not found"
+      });
+    }
+
+    // تحقق من الصلاحيات
+    if (role === "coach") {
+      if (booking.coach.toString() !== userId.toString()) {
+        return res.status(403).json({
+          status: "error",
+          message: "Not authorized to cancel this booking"
+        });
+      }
+    } else if (role !== "admin") {
+      return res.status(403).json({
+        status: "error",
+        message: "Not authorized to cancel bookings"
+      });
+    }
+
+    // تحقق إذا الحجز ملغي أصلاً
+    if (booking.status === "cancelled") {
+      return res.status(400).json({
+        status: "error",
+        message: "Booking is already cancelled"
+      });
+    }
+
+    // تحديث حالة الحجز
+    booking.status = "cancelled";
+    await booking.save();
+
+    return res.status(200).json({
+      status: "success",
+      message: "Booking cancelled successfully",
+      data: booking
+    });
+
+  } catch (err) {
+    return next(new AppError(err.message, 500));
+  }
+};
+
 export default {
   createBooking,
   getBookings,

@@ -4,7 +4,7 @@ import userModel from '../../DB/models/user.model.js';
 
 export const roles = {
   Admin: "admin",
-  Trainer: "trainer",
+  Coach: "coach",
   Member: "member",
   Receptionist: "receptionist"
 };
@@ -42,7 +42,7 @@ export const auth = (allowedRoles = []) => {
             data: null
           });
         }
-
+//promise all
         const user = await userModel.findById(userId).lean();
         if (!user?.refreshToken) {
           return res.status(401).json({

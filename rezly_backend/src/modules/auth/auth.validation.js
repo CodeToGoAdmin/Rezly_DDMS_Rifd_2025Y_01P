@@ -25,8 +25,8 @@ export const signUpSchema= Joi.object({
       size: Joi.number().max(5000000).required() // الحجم الأقصى 5 ميجابايت
     }).optional(),*/
       
-    role: Joi.string().valid('Trainer','Admin','Coach','Receptionist').optional().messages({
-      'any.only': 'Role must be either Trainer or Admin or Coach or Receptionist',
+    role: Joi.string().valid('Member','Admin','Coach','Receptionist').optional().messages({
+      'any.only': 'Role must be either Coach or Admin or Coach or or Member or Receptionist',
     }),
 
     gender: Joi.string().valid('Male', 'Female').required().messages({

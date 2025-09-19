@@ -33,18 +33,18 @@ afterEach(async () => {
 
 describe('Booking Controller - Integration Tests', () => {
   let req, res, next;
-  let trainer, admin, otherUser, booking;
+  let coach, admin, otherUser, booking;
 
 beforeEach(async () => {
   req = { body: {}, params: {}, query: {}, userId: '', user: {} };
   res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
   next = jest.fn();
 
-  trainer = await userModel.create({ 
-    userName: 'trainerUser',
-    name: 'Trainer', 
-    email: `trainer${Date.now()}@test.com`, 
-    role: 'Trainer', 
+  coach = await userModel.create({ 
+    userName: 'coachUser',
+    name: 'Coach', 
+    email: `coach${Date.now()}@test.com`, 
+    role: 'Coach', 
     password: '123456' 
   });
 
@@ -59,13 +59,13 @@ beforeEach(async () => {
   otherUser = await userModel.create({
     userName: 'otherUser',
     password: '123456',
-    role: 'Trainer',
+    role: 'Coach',
     email: 'otherUser@example.com'
   });
 
   booking = await Booking.create({
     service: 'Yoga',
-    trainer: trainer._id,
+    coach: coach._id,
     date: '2099-01-01',
     timeStart: '10:00 AM',
     timeEnd: '11:00 AM',
@@ -82,7 +82,7 @@ beforeEach(async () => {
       user: { _id: admin._id, role: "Admin" },
       body: {
         service: "Yoga",
-        trainerId: trainer._id,
+        coachId: coach._id,
         date: "2029-01-01",
        timeStart: "11:30 AM", // وقت جديد
   timeEnd: "12:30 PM",
@@ -107,8 +107,8 @@ beforeEach(async () => {
 
   it('should get bookings for admin', async () => {
     await Booking.create([
-      { service: 'Yoga', trainer: trainer._id, date: '2099-01-01', timeStart: '10:00 AM', timeEnd: '11:00 AM', location: 'Room A', numberOfMembers: 5 },
-      { service: 'Pilates', trainer: trainer._id, date: '2099-01-02', timeStart: '12:00 PM', timeEnd: '1:00 PM', location: 'Room B', numberOfMembers: 3 }
+      { service: 'Yoga', coach: coach._id, date: '2099-01-01', timeStart: '10:00 AM', timeEnd: '11:00 AM', location: 'Room A', numberOfMembers: 5 },
+      { service: 'Pilates', coach: coach._id, date: '2099-01-02', timeStart: '12:00 PM', timeEnd: '1:00 PM', location: 'Room B', numberOfMembers: 3 }
     ]);
 
     req.user = { role: 'Admin', _id: admin._id };
@@ -157,10 +157,10 @@ beforeEach(async () => {
   });
 
   it('should not allow non-admin to create a booking', async () => {
-    req.user = { _id: trainer._id, role: 'Trainer' };
+    req.user = { _id: coach._id, role: 'Coach' };
     req.body = {
       service: 'Pilates',
-      trainerId: trainer._id,
+      coachId: coach._id,
       date: '2099-01-02',
       timeStart: '12:00 PM',
       timeEnd: '1:00 PM',
@@ -187,7 +187,7 @@ expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'error',
 
   it('should not allow a user to delete another user’s booking', async () => {
     req.params.id = booking._id.toString();
-    req.user = { _id: otherUser._id, role: 'Trainer' };
+    req.user = { _id: otherUser._id, role: 'Coach' };
 
     await deleteBooking(req, res, next);
 
@@ -202,6 +202,6 @@ expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'error',
     await createBooking(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'error',message:'Trainer not found or invalid role' }));
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'error',message:'Coach not found or invalid role' }));
   });
 });

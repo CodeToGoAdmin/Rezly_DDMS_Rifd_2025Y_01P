@@ -32,16 +32,16 @@ next = jest.fn();
 
 
   test('should return 403 if user is not admin', async () => {
-    req.user.role = 'Trainer';
+    req.user.role = 'Coach';
     await createBooking(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(403);
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'fail' }));
   });
 
-  test('should return 400 if trainer not found', async () => {
+  test('should return 400 if coach not found', async () => {
     req.user.role = 'Admin';
-    req.body.trainerId = new mongoose.Types.ObjectId();
+    req.body.coachId = new mongoose.Types.ObjectId();
 
     // Mock chain method findById().lean()
     userModel.findById.mockReturnValue({
@@ -57,7 +57,7 @@ next = jest.fn();
 
   test('should create booking successfully', async () => {
   req.user.role = 'Admin';
-  req.body.trainerId = new mongoose.Types.ObjectId();
+  req.body.coachId = new mongoose.Types.ObjectId();
   req.body.service = 'Yoga';
   req.body.date = '2049-01-01';
   req.body.timeStart = '10:00 AM';
@@ -67,11 +67,11 @@ next = jest.fn();
 
   // Mock userModel
   userModel.findById.mockReturnValue({
-    lean: jest.fn().mockResolvedValue({ _id: req.body.trainerId, role: 'Trainer' })
+    lean: jest.fn().mockResolvedValue({ _id: req.body.coachId, role: 'Coach' })
   });
 
-  // Mock Booking.find() for trainer conflict
-  Booking.find.mockImplementation(({ trainer, date, location }) => {
+  // Mock Booking.find() for coach conflict
+  Booking.find.mockImplementation(({ coach, date, location }) => {
     return {
       lean: jest.fn().mockResolvedValue([]) // ← لا يوجد حجوزات حالياً
     };
@@ -92,7 +92,7 @@ next = jest.fn();
   // ===== filterBookings =====
   test('filterBookings returns bookings for admin', async () => {
     req.user.role = 'Admin';
-    req.query.trainerId = new mongoose.Types.ObjectId().toString();
+    req.query.coachId = new mongoose.Types.ObjectId().toString();
     Booking.aggregate.mockResolvedValue([{ _id: new mongoose.Types.ObjectId() }]);
 
     await filterBookings(req, res);
@@ -111,16 +111,16 @@ next = jest.fn();
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'error' }));
   });
 
- test('getBookingDetails returns booking data for trainer if owns the booking', async () => {
+ test('getBookingDetails returns booking data for coach if owns the booking', async () => {
  const bookingId = new mongoose.Types.ObjectId();
-const trainerId = new mongoose.Types.ObjectId();
+const coachId = new mongoose.Types.ObjectId();
 
-req.user.role = 'Trainer';
-req.userId = trainerId.toString(); // هكذا تصبح String
+req.user.role = 'Coach';
+req.userId = coachId.toString(); // هكذا تصبح String
 req.params.id = bookingId.toString();
 
 Booking.findById.mockReturnValue({
-  lean: jest.fn().mockResolvedValue({ _id: bookingId, trainer: trainerId })
+  lean: jest.fn().mockResolvedValue({ _id: bookingId, coach: coachId })
 });
 
 
@@ -145,7 +145,7 @@ expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'success
 
  test('updateBooking returns 403 if not authorized', async () => {
   const bookingId = new mongoose.Types.ObjectId();
-  const trainerId = new mongoose.Types.ObjectId();
+  const coachId = new mongoose.Types.ObjectId();
 
   req.user.role = 'Member';
   req.userId = new mongoose.Types.ObjectId().toString();
@@ -153,12 +153,12 @@ expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'success
 
   // Mock findById().lean()
   Booking.findById.mockReturnValue({
-    lean: jest.fn().mockResolvedValue({ _id: bookingId, trainer: trainerId, date: req.body?.date, startMinutes: 600, endMinutes: 660 })
+    lean: jest.fn().mockResolvedValue({ _id: bookingId, coach: coachId, date: req.body?.date, startMinutes: 600, endMinutes: 660 })
   });
 
   Booking.find.mockResolvedValue([]); // للتحقق من conflicts
   Booking.findByIdAndUpdate.mockResolvedValue({ ...req.body, _id: bookingId });
-  userModel.findById.mockResolvedValue({ _id: trainerId, role: 'Trainer' });
+  userModel.findById.mockResolvedValue({ _id: coachId, role: 'Coach' });
 
   // تأكد من res mock
   res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
@@ -170,14 +170,14 @@ expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'success
 });
 test('updateBooking updates booking successfully', async () => {
   const bookingId = new mongoose.Types.ObjectId();
-  const trainerId = new mongoose.Types.ObjectId();
+  const coachId = new mongoose.Types.ObjectId();
 
   // ===== إعداد req =====
   req.user = { role: 'Admin' };
-  req.userId = trainerId.toString();
+  req.userId = coachId.toString();
   req.params.id = bookingId.toString();
   req.body = {
-    trainerId,
+    coachId,
     service: 'Yoga',
     date: '2049-01-01',
     timeStart: '10:30 AM',
@@ -189,7 +189,7 @@ test('updateBooking updates booking successfully', async () => {
   Booking.findById.mockReturnValue({
     lean: jest.fn().mockResolvedValue({
       _id: bookingId,
-      trainer: trainerId,
+      coach: coachId,
       date: req.body.date,
       startMinutes: 630, // 10:30 AM
       endMinutes: 690    // 11:30 AM
@@ -211,7 +211,7 @@ test('updateBooking updates booking successfully', async () => {
 
   // ===== mock userModel.findById().lean() =====
   userModel.findById.mockReturnValue({
-    lean: jest.fn().mockResolvedValue({ _id: trainerId, role: 'Trainer' })
+    lean: jest.fn().mockResolvedValue({ _id: coachId, role: 'Coach' })
   });
 
   // ===== mock res =====
@@ -234,7 +234,7 @@ test('updateBooking updates booking successfully', async () => {
 
   // ===== deleteBooking =====
   test('deleteBooking returns 403 if not admin', async () => {
-    req.user.role = 'Trainer';
+    req.user.role = 'Coach';
     req.params.id = new mongoose.Types.ObjectId().toString();
 
     await deleteBooking(req, res, next);
