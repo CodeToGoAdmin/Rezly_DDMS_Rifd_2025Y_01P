@@ -8,7 +8,7 @@
 }
 
 .selectDateButton {
-  background-color: #6A0EAD !important;
+  background-color: var(--color-purple) !important;
   color: #FFF !important;
   border: none;
   border-radius: 8px;
@@ -65,7 +65,7 @@
 }
 
 .react-datepicker__day--selected {
-  background-color: #6A0EAD !important;
+  background-color: var(--color-purple) !important;
   color: white !important;
   border-radius: 12px !important;
   display: flex !important;
@@ -112,7 +112,7 @@
 }
 
 .mini-calendar-card .react-datepicker__day--selected {
-  background-color: #6A0EAD !important;
+  background-color: var(--color-purple) !important;
   color: #fff !important;
   border-radius: 12px !important;
   width: 38px !important;

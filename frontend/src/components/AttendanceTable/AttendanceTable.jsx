@@ -7,6 +7,9 @@ const AttendanceTable = () => {
     { name: "بيان عبد الحق", inTime: "8:08", outTime: "11:00", status: "موجود" },
     { name: "بيان عبد الحق", inTime: "8:08", outTime: "----", status: "موجود" },
     { name: "بيان عبد الحق", inTime: "8:08", outTime: "----", status: "مكتمل" },
+    { name: "بيان عبد الحق", inTime: "8:08", outTime: "----", status: "موجود" },
+
+
   ];
 
   const getStatusClass = (status) => {
@@ -17,12 +20,12 @@ const AttendanceTable = () => {
 
   return (
     <div className="attendance-container">
-      <div className="attendance-header">
-        <h2 className="table-title">سجل الحضور</h2>
+      <div className="attendance-header ">
+        <h2 className="table-title text-black ">سجل الحضور</h2>
         <button className="back-btn">›</button>
       </div>
 
-      <table className="attendance-table">
+      <table className="attendance-table ">
         <thead>
           <tr>
             <th>الاسم</th>

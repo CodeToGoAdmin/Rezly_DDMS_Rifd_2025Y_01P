@@ -15,10 +15,10 @@ export default function Dashboard() {
   const [openSidebar, setOpenSidebar] = useState(false);
 
   return (
-    <div className="w-full min-h-screen bg-[#F8F9FA] flex flex-col relative">
+    <div className="w-full min-h-screen bg-bg flex flex-col relative">
       {/* Mobile Sidebar Drawer */}
       {openSidebar && (
-        <div className="fixed top-0 left-0 w-[212px] h-full bg-white shadow-lg border-r z-50 flex flex-col">
+        <div className="fixed top-0 left-0 w-[212px] h-full bg-bg shadow-lg border-r z-50 flex flex-col">
           <Sidebar />
           <button
             onClick={() => setOpenSidebar(false)}
@@ -32,26 +32,26 @@ export default function Dashboard() {
       {/* Mobile Sidebar Button */}
       <button
         onClick={() => setOpenSidebar(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-purple-500 text-white rounded"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-bg text-white rounded"
       >
         ☰
       </button>
 
-      <div className="w-full flex flex-col lg:flex-row gap-6 px-4 lg:px-6">
-        <div className="hidden lg:flex flex-none w-[212px] bg-white">
+      <div className=" flex flex-col lg:flex-row gap-6 px-4 lg:px-6">
+        <div className="hidden lg:flex flex-none w-[212px] ">
           <Sidebar />
         </div>
 
         <div className="flex-1 flex flex-col pt-6 gap-6">
-          <div className="w-full">
+          <div className="">
             <Topbar />
           </div>
 
-          <div className="flex-1 flex flex-col lg:flex-row gap-6 w-full px-4 lg:px-6">
+          <div className=" flex flex-col lg:flex-row gap-6 px-4 lg:px-6">
             <div className="flex-[2] flex flex-col gap-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
                 <StatCard
-                  className="w-full"
+                  className=""
                   value={
                     <span className="text-black text-[28px] font-cairo font-bold tracking-[1px] break-words">
                       60
@@ -66,7 +66,7 @@ export default function Dashboard() {
                   bgColor="#9333EA"
                 />
                 <StatCard
-                  className="w-full"
+                  className=""
                   value={
                     <span className="text-black text-[28px] font-cairo font-bold tracking-[1px] break-words">
                       $440
@@ -81,7 +81,7 @@ export default function Dashboard() {
                   bgColor="#22C55E"
                 />
                 <StatCard
-                  className="w-full"
+                  className=""
                   value={
                     <span className="text-black text-[28px] font-cairo font-bold tracking-[1px] break-words">
                       23
@@ -96,7 +96,7 @@ export default function Dashboard() {
                   bgColor="#3B82F6"
                 />
                 <StatCard
-                  className="w-full"
+                  className=""
                   value={
                     <span className="text-black text-[28px] font-cairo font-bold tracking-[1px] break-words">
                       15
@@ -112,17 +112,17 @@ export default function Dashboard() {
                 />
               </div>
 
-              <div className="bg-white rounded-2xl shadow py-6 w-full h-[299px]">
+              <div className="bg-white rounded-2xl shadow py-6  ">
                 <Chart />
               </div>
 
-              <div className="bg-white rounded-2xl shadow p-4 w-full h-[307px] overflow-x-auto">
+              <div className="bg-white rounded-2xl shadow p-4  overflow-x-auto">
                 <AttendanceTable />
               </div>
             </div>
 
-            <div className="flex-[3] flex mt-6 lg:mt-0">
-              <div className="bg-white rounded-2xl shadow p-4 w-full">
+            <div className="flex-[3] flex mt-6 lg:mt-0 w-full">
+              <div className="bg-white rounded-2xl shadow p-4 ">
                 <Calender />
               </div>
             </div>
