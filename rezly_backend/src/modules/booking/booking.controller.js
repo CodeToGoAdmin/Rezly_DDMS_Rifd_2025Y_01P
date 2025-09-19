@@ -36,14 +36,11 @@ export const getBookings = async (req, res, next) => {
         message: "Success",
       });
     }
-
-    // ربط الأعضاء مرة واحدة لكل الحجز
     const bookingIds = bookings.map(b => b._id);
     const bookingMembers = await BookingMember.find({ booking: { $in: bookingIds } })
       .select("booking member -_id")
       .lean();
 
-    // إنشاء خريطة لحجز -> أعضاء
     const bookingMap = {};
     bookingMembers.forEach(bm => {
       const bid = bm.booking.toString();
