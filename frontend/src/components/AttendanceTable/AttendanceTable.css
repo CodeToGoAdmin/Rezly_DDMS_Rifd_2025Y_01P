@@ -46,7 +46,7 @@ color: #000;
 }
 
 .attendance-table thead {
-  background: #6A0EAD; 
+  background: var(--color-purple);
   color: white;
 }
 
@@ -68,7 +68,7 @@ color: #000;
 
 /* تلوين الصفوف الزوجية */
 .attendance-table tbody tr:nth-child(even) {
-  background: #F8F9FA;
+  background: var(--color-bg);
 }
 
 /* الحالات */
@@ -81,9 +81,9 @@ color: #000;
 }
 
 .status-complete {
-  background: #4caf50;
+  background: var(--color-green);
 }
 
 .status-present {
-  background: #6A0EAD;
+  background: var(--color-purple)
 }

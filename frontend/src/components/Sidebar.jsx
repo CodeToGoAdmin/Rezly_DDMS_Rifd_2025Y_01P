@@ -9,16 +9,17 @@ import Logo from '../assets/icon/rezly-logo.svg'
 export default function Sidebar() {
   const [active, setActive] = useState('home')
 
-  const menuItems = [
-    { id: 'home', label: 'الصفحة الرئيسية', icon: Homesidebar },
-    { id: 'booking', label: 'إدارة العملاء', icon: Booking },
-    { id: 'employees', label: 'طاقم العمل', icon: Employeeside },
-    { id: 'finance', label: 'المالية', icon: WalletSide },
-  ]
+ const menuItems = [
+  { id: 'home', label: 'الصفحة الرئيسية', icon: Homesidebar,  },
+  { id: 'booking', label: 'إدارة العملاء', icon: Booking,  },
+  { id: 'employees', label: 'طاقم العمل', icon: Employeeside, },
+  { id: 'finance', label: 'المالية', icon: WalletSide },
+]
+
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex">
-      <aside className="w-64 bg-[#F8F9FA] p-5 flex flex-col h-screen font-[Cairo]">
+    <div className="min-h-screen bg-bg flex">
+      <aside className="w-64 bg-bg p-5 flex flex-col h-screen font-[Cairo]">
 
         {/* اللوجو */}
         <div className="logo p-3">
@@ -36,9 +37,11 @@ export default function Sidebar() {
                               hover:text-black hover:bg-white
                               border-none transition`}
                 >
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#6A0EAD] text-white">
-                    <img src={item.icon} className="w-7 h-6" />
-                  </div>
+<div className="w-7 h-7 rounded-[12px] flex items-center justify-center bg-[var(--color-purple)]">
+  <img src={item.icon} className="w-4 h-4" />
+</div>
+
+
                   <span className={`text-[14px] leading-[21px] font-[Cairo] ${active === item.id ? 'font-bold text-black' : 'font-normal text-black'}`}>
                     {item.label}
                   </span>
@@ -52,9 +55,10 @@ export default function Sidebar() {
         <div className="mt-auto pt-6">
           <button className="w-full flex items-center justify-start gap-3 p-3 rounded-xl 
                              border-none transition hover:text-black hover:bg-white">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#6A0EAD] text-white">
-              <img src={Logout} className="w-7 h-6" />
-            </div>
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M4 1.33337C3.46957 1.33337 2.96086 1.54409 2.58579 1.91916C2.21071 2.29423 2 2.80294 2 3.33337V12.6667C2 13.1971 2.21071 13.7058 2.58579 14.0809C2.96086 14.456 3.46957 14.6667 4 14.6667H8C8.53043 14.6667 9.03914 14.456 9.41421 14.0809C9.78929 13.7058 10 13.1971 10 12.6667V3.33337C10 2.80294 9.78929 2.29423 9.41421 1.91916C9.03914 1.54409 8.53043 1.33337 8 1.33337H4ZM10.862 4.86204C10.987 4.73706 11.1566 4.66685 11.3333 4.66685C11.5101 4.66685 11.6796 4.73706 11.8047 4.86204L14.4713 7.52871C14.5963 7.65373 14.6665 7.82326 14.6665 8.00004C14.6665 8.17682 14.5963 8.34635 14.4713 8.47137L11.8047 11.138C11.6789 11.2595 11.5105 11.3267 11.3357 11.3252C11.1609 11.3236 10.9937 11.2535 10.8701 11.1299C10.7465 11.0063 10.6764 10.8391 10.6749 10.6643C10.6734 10.4895 10.7406 10.3211 10.862 10.1954L12.3907 8.66671H6.66667C6.48986 8.66671 6.32029 8.59647 6.19526 8.47144C6.07024 8.34642 6 8.17685 6 8.00004C6 7.82323 6.07024 7.65366 6.19526 7.52864C6.32029 7.40361 6.48986 7.33337 6.66667 7.33337H12.3907L10.862 5.80471C10.737 5.67969 10.6668 5.51015 10.6668 5.33337C10.6668 5.1566 10.737 4.98706 10.862 4.86204Z" fill="var(--color-purple)"/>
+</svg>
+
             <span className="text-[14px] leading-[21px] font-bold text-black">تسجيل الخروج</span>
           </button>
         </div>

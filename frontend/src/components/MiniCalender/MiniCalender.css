@@ -7,8 +7,9 @@
   width: 100%;
   direction: rtl;
 }
+
 .selectDateButton {
-  background-color: #6A0EAD !important;
+  background-color: var(--color-purple) !important;
   color: #FFF !important;
   border: none;
   border-radius: 8px;
@@ -54,16 +55,18 @@
 .react-datepicker__day-names {
   direction: rtl !important;
 }
+
 .react-datepicker__week {
   direction: ltr !important;
 
 }
+
 .react-datepicker__day {
   color: #6B7280 !important;
 }
 
 .react-datepicker__day--selected {
-  background-color: #6A0EAD !important;
+  background-color: var(--color-purple) !important;
   color: white !important;
   border-radius: 12px !important;
   display: flex !important;
@@ -99,8 +102,10 @@
 .mini-calendar-card .react-datepicker__month-container,
 .mini-calendar-card .react-datepicker__month,
 .mini-calendar-card .react-datepicker__header {
-  width: 100% !important; /* تمتد على كامل عرض الديف الداخلي */
-  box-sizing: border-box;  /* حساب padding والحدود ضمن القياس */
+  width: 100% !important;
+  /* تمتد على كامل عرض الديف الداخلي */
+  box-sizing: border-box;
+  /* حساب padding والحدود ضمن القياس */
   margin: 0 !important;
   padding: 0 !important;
 }
@@ -111,7 +116,7 @@
 }
 
 .mini-calendar-card .react-datepicker__day--selected {
-  background-color: #6A0EAD !important;
+  background-color: var(--color-purple) !important;
   color: #fff !important;
   border-radius: 12px !important;
   width: 38px !important;
@@ -129,14 +134,17 @@
 
 /* الكاليندر نفسه */
 .mini-calendar-card .react-datepicker__month {
-  height: 213px !important; /* ارتفاع الكاليندر حسب الفيجما */
+  height: 213px !important;
+  /* ارتفاع الكاليندر حسب الفيجما */
   display: flex !important;
-  flex-wrap: wrap !important; /* يضمن أن كل الأيام تتوزع بشكل كامل */
-  justify-content: space-between !important; /* توزيع الأيام على كامل العرض */
+  flex-wrap: wrap !important;
+  /* يضمن أن كل الأيام تتوزع بشكل كامل */
+  justify-content: space-between !important;
+  /* توزيع الأيام على كامل العرض */
 }
+
 /* الهيدر */
 .mini-calendar-card .react-datepicker__header {
-  height: 32px !important; /* ارتفاع الهيدر حسب الفيجما */
+  height: 32px !important;
+  /* ارتفاع الهيدر حسب الفيجما */
 }
-
-

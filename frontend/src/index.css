@@ -1,15 +1,39 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
 
+@import "tailwindcss";
+
+:root {
+  --color-bg: #F8F9FA;
+  --color-purple: #6A0EAD; ;   
+  --color-green: #4caf50;
+  --color-blue: #3B82F6;
+  --color-yellow: #FACC15;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-danger: #EF4444;
+  font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 body {
   font-family: 'Cairo';
-    background-color: #F8F9FA;
+  background-color: #F8F9FA;
+  overflow-x: hidden;
+
 
 }
-body {
-  overflow-x: hidden;
-}
-.chart, .table {
+
+
+.chart,
+.table {
   max-width: 100%;
 }
 
@@ -18,28 +42,15 @@ button:focus {
   box-shadow: none !important;
 }
 
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: #F8F9FA;
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
 
 a {
   font-weight: 500;
-  color: #6A0EAD;
+  color: var(--color-purple);
   text-decoration: inherit;
 }
+
 a:hover {
-  color: #6A0EAD;
+  color: var(--color-purple);
 }
 
 body {
@@ -62,6 +73,7 @@ button {
   cursor: pointer;
 
 }
+
 button:hover {
   background-color: white;
 }
@@ -69,73 +81,84 @@ button:hover {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #6A0EAD;
+    color: var(--color-purple);
     background-color: #ffffff;
   }
+
   a:hover {
-    color: #6A0EAD;
+    color: var(--color-purple);
   }
+
   button {
     background-color: #f9f9f9;
   }
 }
-/*chart css*/
-        .filter-btn {
-          padding: 6px 10px;
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          background: #f9f9f9;
-          cursor: pointer;
-               align-items: center;
-          display: flex;
-          justify-content: center;
-        }
-        .filter-select {
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          background: #f9f9f9;
-          cursor: pointer;
-          width: 100px;
-          height:32px;
-      
-        }
-        .tab-btn {
-          
-          border: 1px solid #6A0EAD;
-          border-radius: 8px;
-          background: #fff;
-          color: black;
-          cursor: pointer;
-          font-weight: bold;
-           width: 80px;
-          height:32px;
-          align-items: center;
-          display: flex;
-          justify-content: center;
-        }
-        .tab-btn.active {
-          background: #6A0EAD;
-          color: #fff!important;
-        }
-        .filter{
-          width: 208px;
-          height: 32px;
-        }
-        .filter-btn2{
-          width: 32px;
-          height: 32px;
 
-        }
-        .chart{
-          width: 436px;
-        }
-       
+/*chart css*/
+.filter-btn {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+  cursor: pointer;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+.filter-select {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+  cursor: pointer;
+  width: 100px;
+  height: 32px;
+
+}
+
+.tab-btn {
+
+  border: 1px solid var(--color-purple);
+  border-radius: 8px;
+  background: #fff;
+  color: black;
+  cursor: pointer;
+  font-weight: bold;
+  width: 80px;
+  height: 32px;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+.tab-btn.active {
+  background: var(--color-purple);
+  color: #fff !important;
+}
+
+.filter {
+  width: 208px;
+  height: 32px;
+}
+
+.filter-btn2 {
+  width: 32px;
+  height: 32px;
+
+}
+
+.chart {
+  width: 436px;
+}
+
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
