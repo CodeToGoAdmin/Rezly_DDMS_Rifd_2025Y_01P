@@ -26,7 +26,7 @@ export const signUpSchema= Joi.object({
     }).optional(),*/
       
     role: Joi.string().valid('Member','Admin','Coach','Receptionist').optional().messages({
-      'any.only': 'Role must be either Coach or Admin or Coach or or Member or Receptionist',
+      'any.only': 'Role must be either Coach or Admin  or Member or Receptionist',
     }),
 
     gender: Joi.string().valid('Male', 'Female').required().messages({
