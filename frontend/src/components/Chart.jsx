@@ -43,7 +43,6 @@ export default function Chart() {
     <section
       style={{
         borderRadius: "10px",
-        padding: "20px",
         background: "white",
       }}
     >
@@ -68,7 +67,7 @@ export default function Chart() {
 
           <div style={{
             display: "flex",
-            padding: "0 16px",
+            padding: "0 8px",
             justifyContent: "space-between",
             alignItems: "center",
             alignSelf: "stretch",
@@ -93,7 +92,9 @@ export default function Chart() {
           }}
         >
           <button className="filter-btn" onClick={toggleChartType}>
-            <img src={Charticon} alt="chart icon date" />
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2 2C2.36667 2 2.66699 2.30033 2.66699 2.66699V12C2.66699 12.3666 2.96649 12.6668 3.33301 12.667H14C14.3666 12.667 14.6668 12.9665 14.667 13.333C14.667 13.6997 14.3667 14 14 14H3.33301C2.22649 13.9998 1.33301 13.1066 1.33301 12V2.66699C1.33301 2.30033 1.63333 2 2 2ZM12.9795 4.31348C13.1195 4.17351 13.3397 4.12712 13.5264 4.20703C13.713 4.28036 13.833 4.46699 13.833 4.66699V11.333C13.833 11.6063 13.6063 11.833 13.333 11.833H4C3.72667 11.833 3.5 11.6063 3.5 11.333V9.33301C3.50008 9.19978 3.55322 9.07276 3.64648 8.97949L6.97949 5.64648C7.17278 5.4532 7.49318 5.4533 7.68652 5.64648L9.66699 7.62695L12.9795 4.31348Z" fill="var(--color-purple)"/>
+</svg>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="w-3 h-3 ml-1"
@@ -123,7 +124,7 @@ export default function Chart() {
             <Line
               type="monotone"
               dataKey="value"
-              stroke="#6A0EAD"
+              stroke="var(--color-purple)"
               strokeWidth={3}
               dot
             />
@@ -137,7 +138,7 @@ export default function Chart() {
             />
             <YAxis hide />
             <Tooltip />
-            <Bar dataKey="value" fill="#6A0EAD" barSize={30} radius={[6, 6, 0, 0]} />
+            <Bar dataKey="value" fill="var(--color-purple)" barSize={30} radius={[6, 6, 0, 0]} />
           </BarChart>
         )}
       </ResponsiveContainer>

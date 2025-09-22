@@ -81,7 +81,10 @@ const [remind, setRemind] = useState({
           <div>
             <label className="block font-bold text-sm w-full h-[18px] mb-2">العنوان</label>
             <div className="relative flex items-center">
-              <img src={addressIcon} alt="address" className="absolute right-2" />
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute right-2">
+<path d="M5.99805 12.7032L5.12891 13.5724C4.53647 14.1646 3.73317 14.4972 2.89551 14.4972H2C1.72386 14.4972 1.5 14.2733 1.5 13.9972V13.1046C1.5 12.2668 1.83251 11.4628 2.4248 10.8702L3.29492 10.0001L5.99805 12.7032ZM7.66504 11.0363L6.70605 11.9962L4.00293 9.29309L4.96191 8.33313L7.66504 11.0363ZM11.4551 1.84094C11.9102 1.38576 12.6487 1.38647 13.1035 1.84192L14.1602 2.89954C14.6144 3.35459 14.6139 4.09235 14.1592 4.547L8.37305 10.3322L5.66895 7.62805L11.4551 1.84094Z" fill="  var(--color-purple)
+"/>
+</svg>
               <input
                 type="text"
                 value={newEvent.title || ""}
@@ -96,21 +99,27 @@ const [remind, setRemind] = useState({
           <div>
             <label className="block font-bold text-sm w-full h-[18px] mb-2">الوصف (اختياري)</label>
             <div className="relative flex items-center">
-              <img src={discIcon} alt="disc" className="absolute right-2" />
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute right-2">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M3.45329 1.5C2.37329 1.5 1.5 2.37329 1.5 3.45329V12.5534C1.5 13.6267 2.37329 14.5 3.45329 14.5H9.29997C9.4733 14.5 9.63993 14.4333 9.75993 14.3066L14.3066 9.75993C14.4333 9.63993 14.5 9.4733 14.5 9.29997V3.45329C14.5 2.37329 13.6266 1.5 12.5533 1.5H3.45329ZM13.2 9.03337L9.03328 13.2V10.0334C9.03328 9.48003 9.47995 9.03337 10.0333 9.03337H13.2Z" fill="  var(--color-purple)
+"/>
+</svg>
               <textarea
                 value={newEvent.description || ""}
                 onChange={e => setNewEvent({ ...newEvent, description: e.target.value })}
                 placeholder="....."
-                className="h-10 pr-8 pl-2 w-full rounded-md border border-[#7E818C] border-solid focus:outline-none"
+                className="h-10 pr-8 pl-2 w-full rounded-md border border-[#7E818C] border-solid focus:outline-none "
               />
             </div>
           </div>
 
           {/* التاريخ */}
           <div>
-            <label className="block font-bold text-sm w-full h-[18px] mb-2">التاريخ</label>
+            <label className="block font-bold text-sm w-full h-[18px] mb-2 ">التاريخ</label>
             <div className="relative flex items-center">
-              <img src={calenderIcon} alt="calender" className="absolute right-2"/>
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute right-2 ">
+<path d="M14 8V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V8H14ZM10.6667 2C10.8435 2 11.013 2.07024 11.1381 2.19526C11.2631 2.32029 11.3333 2.48986 11.3333 2.66667V3.33333H12.6667C13.0203 3.33333 13.3594 3.47381 13.6095 3.72386C13.8595 3.97391 14 4.31304 14 4.66667V6.66667H2V4.66667C2 4.31304 2.14048 3.97391 2.39052 3.72386C2.64057 3.47381 2.97971 3.33333 3.33333 3.33333H4.66667V2.66667C4.66667 2.48986 4.7369 2.32029 4.86193 2.19526C4.98695 2.07024 5.15652 2 5.33333 2C5.51014 2 5.67971 2.07024 5.80474 2.19526C5.92976 2.32029 6 2.48986 6 2.66667V3.33333H10V2.66667C10 2.48986 10.0702 2.32029 10.1953 2.19526C10.3203 2.07024 10.4899 2 10.6667 2Z" fill="  var(--color-purple)
+"/>
+</svg>
               <input
                 type="text"
                 value={newEvent.start ? newEvent.start.split("T")[0] : ""}
@@ -135,7 +144,10 @@ const [remind, setRemind] = useState({
             <div className="flex items-center gap-2">
               {/* بداية */}
               <div className="relative w-[136px] h-11">
-                <img src={hourIcon} alt="hour" className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5"/>
+<svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute right-2 top-1/2 -translate-y-1/2">
+<path d="M8.5 0C12.9183 1.61064e-08 16.5 3.58172 16.5 8C16.5 12.4183 12.9183 16 8.5 16C4.08172 16 0.5 12.4183 0.5 8C0.5 3.58172 4.08172 0 8.5 0ZM8.5 4.2793C8.089 4.2793 7.75586 4.61243 7.75586 5.02344V8C7.75586 8.19737 7.83407 8.38681 7.97363 8.52637L9.46191 10.0146C9.75254 10.3053 10.224 10.3053 10.5146 10.0146C10.8053 9.72403 10.8053 9.25254 10.5146 8.96191L9.24414 7.69141V5.02344C9.24414 4.61243 8.911 4.2793 8.5 4.2793Z" fill="  var(--color-purple)
+"/>
+</svg>
                 <select
                   value={newEvent.start ? newEvent.start.split("T")[1]?.slice(0,5) : ""}
                   onChange={(e) => {
@@ -154,11 +166,16 @@ const [remind, setRemind] = useState({
                   })}
                 </select>
               </div>
-              <img src={leftarrowIcon} alt="leftarrow" />
+<svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M8.79297 6.29297C9.18349 5.90247 9.81651 5.90246 10.207 6.29297C10.5975 6.68349 10.5975 7.31651 10.207 7.70703L6.91406 11H20.5C21.0523 11 21.5 11.4477 21.5 12C21.5 12.5523 21.0523 13 20.5 13H6.91406L10.207 16.293C10.5976 16.6835 10.5976 17.3165 10.207 17.707C9.81651 18.0976 9.18349 18.0976 8.79297 17.707L3.79297 12.707C3.69263 12.6067 3.61811 12.4904 3.56934 12.3662C3.52584 12.2556 3.50114 12.1346 3.5 12.0088V11.9971C3.50041 11.8551 3.53022 11.7199 3.58398 11.5977C3.6236 11.5074 3.67756 11.4214 3.74512 11.3438C3.7619 11.3245 3.77965 11.306 3.79785 11.2881L8.79297 6.29297Z" fill="  var(--color-purple)
+"/>
+</svg>
               {/* نهاية */}
               <div className="relative w-[136px] h-11">
-                <img src={hourIcon} alt="hour" className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5"/>
-                <select
+<svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute right-2 top-1/2 -translate-y-1/2">
+<path d="M8.5 0C12.9183 1.61064e-08 16.5 3.58172 16.5 8C16.5 12.4183 12.9183 16 8.5 16C4.08172 16 0.5 12.4183 0.5 8C0.5 3.58172 4.08172 0 8.5 0ZM8.5 4.2793C8.089 4.2793 7.75586 4.61243 7.75586 5.02344V8C7.75586 8.19737 7.83407 8.38681 7.97363 8.52637L9.46191 10.0146C9.75254 10.3053 10.224 10.3053 10.5146 10.0146C10.8053 9.72403 10.8053 9.25254 10.5146 8.96191L9.24414 7.69141V5.02344C9.24414 4.61243 8.911 4.2793 8.5 4.2793Z" fill="  var(--color-purple)
+"/>
+</svg>                <select
                   value={newEvent.end ? newEvent.end.split("T")[1]?.slice(0,5) : ""}
                   onChange={(e) => {
                     const datePart = (newEvent.start || new Date().toISOString()).split("T")[0];
@@ -186,7 +203,10 @@ const [remind, setRemind] = useState({
               className="w-full h-10 border border-[#7E818C] rounded-md flex items-center justify-between cursor-pointer relative"
               onClick={() => setOpenLocation(!openLocation)}
             >
-              <img src={locationIcon} alt="location" className="absolute right-2" />
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute right-2">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M7.99984 0.833313C4.77346 0.833313 2.1665 3.4738 2.1665 6.72042C2.1665 8.58361 2.90945 10.037 4.33489 11.3002C5.26228 12.122 6.9282 13.8693 7.57292 14.9268C7.66223 15.0733 7.82044 15.1638 7.992 15.1665C8.16357 15.1692 8.32453 15.0837 8.41839 14.9401C9.10478 13.8897 10.7463 12.1141 11.6648 11.3002C13.0902 10.037 13.8332 8.58361 13.8332 6.72042C13.8332 3.4738 11.2262 0.833313 7.99984 0.833313ZM8.02327 8.99998C9.31194 8.99998 10.3566 7.95531 10.3566 6.66665C10.3566 5.37798 9.31194 4.33331 8.02327 4.33331C6.73461 4.33331 5.68994 5.37798 5.68994 6.66665C5.68994 7.95531 6.73461 8.99998 8.02327 8.99998Z" fill="  var(--color-purple)
+"/>
+</svg>
               <span className="h-10 pr-8 pl-2 w-full flex items-center">
                 {selectedLocation || "اختر المكان"}
               </span>
@@ -210,9 +230,9 @@ const [remind, setRemind] = useState({
                       onClick={() => { setSelectedLocation(location); setOpenLocation(false); }}
                     >
                       <span className={selectedLocation === location ? "font-bold text-black" : "font-normal text-gray-800"}>{location}</span>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center border-[#6A0EAD]`}>
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center border-purple`}>
                         {selectedLocation === location && (
-                          <div className="w-3 h-3 rounded-full bg-[#6A0EAD] flex items-center justify-center"></div>
+                          <div className="w-3 h-3 rounded-full bg-purple flex items-center justify-center"></div>
                         )}
                       </div>
                     </div>
@@ -254,8 +274,8 @@ const [remind, setRemind] = useState({
                       onClick={() => { setNewEvent({ ...newEvent, coach }); setOpenCoach(false); setCoachSearch(""); }}
                     >
                       <span className={newEvent.coach === coach ? "font-bold text-black" : "font-normal text-gray-800"}>{coach}</span>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${newEvent.coach === coach ? "border-[#6A0EAD]" : "border-gray-400"}`}>
-                        {newEvent.coach === coach && <div className="w-3 h-3 rounded-full bg-[#6A0EAD]"></div>}
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${newEvent.coach === coach ? "border-[purple]" : "border-gray-400"}`}>
+                        {newEvent.coach === coach && <div className="w-3 h-3 rounded-full bg-purple"></div>}
                       </div>
                     </div>
                   ))}
@@ -276,7 +296,10 @@ const [remind, setRemind] = useState({
     className="w-full h-10 border border-[#7E818C] rounded-md flex items-center justify-between cursor-pointer"
     onClick={() => setOpenMembers(!openMembers)}
   >
-    <img src={membersIcon} alt="members" className="absolute right-2" />
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute right-2">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M6.39968 2.40676C5.36634 2.97343 4.65969 4.07335 4.65969 5.33335C4.65969 6.00669 4.85967 6.64002 5.20634 7.16669C3.87967 7.10002 2.82635 6.00669 2.82635 4.66669C2.82635 3.32669 3.94635 2.16669 5.32635 2.16669C5.70635 2.16669 6.07301 2.25343 6.39968 2.40676ZM5.51967 8.16669C3.86634 8.66002 2.66634 10.1867 2.66634 12V13.1667H1.33301C1.05967 13.1667 0.833008 12.94 0.833008 12.6667V11.3334C0.833008 9.58669 2.25301 8.16669 3.99967 8.16669H5.51967ZM7.99967 2.83335C6.61967 2.83335 5.49967 3.95335 5.49967 5.33335C5.49967 6.71335 6.61967 7.83335 7.99967 7.83335C9.37967 7.83335 10.4997 6.71335 10.4997 5.33335C10.4997 3.95335 9.37967 2.83335 7.99967 2.83335ZM6.66634 8.83335C4.91967 8.83335 3.49967 10.2534 3.49967 12V13.3334C3.49967 13.6067 3.72634 13.8334 3.99967 13.8334H11.9997C12.273 13.8334 12.4997 13.6067 12.4997 13.3334V12C12.4997 10.2534 11.0797 8.83335 9.33301 8.83335H6.66634ZM13.1663 4.66669C13.1663 6.00669 12.113 7.10002 10.7864 7.16669C11.133 6.64002 11.333 6.00669 11.333 5.33335C11.333 4.07335 10.633 2.97343 9.59302 2.40676C9.91968 2.25343 10.2797 2.16669 10.6663 2.16669C12.0463 2.16669 13.1663 3.28669 13.1663 4.66669ZM14.6663 13.1667H13.333V12C13.333 10.1867 12.133 8.66002 10.4797 8.16669H11.9997C13.7463 8.16669 15.1663 9.58669 15.1663 11.3334V12.6667C15.1663 12.94 14.9397 13.1667 14.6663 13.1667Z" fill="  var(--color-purple)
+"/>
+</svg>
     <span className="h-10 pr-8 pl-2 w-full flex items-center">
       {selectedMembers.length > 0 ? `${selectedMembers.length} مشتركين` : "اختر المشتركين"}
     </span>
@@ -345,7 +368,7 @@ const [remind, setRemind] = useState({
 
           {/* اللون */}
           <div className="flex items-center gap-4">
-            <label className=" flex items-center gap-2 block font-bold text-sm w-[52px] h-[18px] mb-2">
+            <label className=" flex items-center gap-2  font-bold text-sm w-[52px] h-[18px] mb-2">
               <img src={colorIcon} alt="color" className="w-4 h-4" />اللون
             </label>
             <div className="flex gap-4">
@@ -450,9 +473,9 @@ const [remind, setRemind] = useState({
           </div>
 
           {/* دائرة الاختيار */}
-          <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center border-[#6A0EAD]">
+          <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center border-purple">
             {newEvent.reminder === option.value && (
-              <div className="w-3 h-3 rounded-full bg-[#6A0EAD]"></div>
+              <div className="w-3 h-3 rounded-full bg-purple"></div>
             )}
           </div>
         </div>
@@ -463,9 +486,9 @@ const [remind, setRemind] = useState({
 </div>
 </div>
 
-        {/* زر الحفظ */}
+        {/* زر الحفظ  */}
         <div className="pt-2">
-          <button className="w-full h-10 bg-purple-600 !text-white !bg-purple-600 rounded-md font-semibold hover:!bg-purple-800" onClick={handleSaveEvent}>
+          <button className="w-full h-10 bg-purple !text-white !bg-purple-600 rounded-md font-semibold hover:!bg-purple-800" onClick={handleSaveEvent}>
             حفظ
           </button>
         </div>
