@@ -87,7 +87,7 @@ export default function EventModal({
           <h3 className="text-right text-black text-[16px] font-['Cairo'] font-bold leading-[24px]">
             تفاصيل الموعد
           </h3>
-          <div className="flex w-18 h-full gap-2 flex items-center justify-between">
+          <div className="flex w-18 h-full gap-2  items-center justify-between">
             <img
               className="w-8 h-8 object-contain"
               src={DeleteIcon}
@@ -398,8 +398,8 @@ export default function EventModal({
                         </span>
                         <div
                           className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${newEvent.coach === coach
-                              ? "border-[#6A0EAD]"
-                              : "border-gray-400"
+                            ? "border-[#6A0EAD]"
+                            : "border-gray-400"
                             }`}
                         >
                           {newEvent.coach === coach && (
@@ -498,8 +498,8 @@ export default function EventModal({
                         >
                           <span
                             className={`${isSelected
-                                ? "font-bold text-black"
-                                : "font-normal text-gray-800"
+                              ? "font-bold text-black"
+                              : "font-normal text-gray-800"
                               }`}
                           >
                             {member}
@@ -507,8 +507,8 @@ export default function EventModal({
                           {/* مربع الاختيار */}
                           <div
                             className={`w-5 h-5 border-2 flex items-center justify-center rounded-sm ${isSelected
-                                ? "bg-purple-500 border-purple-500"
-                                : "border-gray-400 bg-white"
+                              ? "bg-purple-500 border-purple-500"
+                              : "border-gray-400 bg-white"
                               }`}
                           >
                             {isSelected && (
@@ -721,14 +721,14 @@ export default function EventModal({
                           src={option.icon} // أيقونة الجرس حسب النوع
                           alt="notification"
                           className={`w-4 h-4 ${newEvent.reminder === option.value
-                              ? "opacity-40"
-                              : ""
+                            ? "opacity-40"
+                            : ""
                             }`}
                         />
                         <span
                           className={`${newEvent.reminder === option.value
-                              ? "font-bold text-black"
-                              : "font-normal text-gray-800"
+                            ? "font-bold text-black"
+                            : "font-normal text-gray-800"
                             }`}
                         >
                           {option.label}
@@ -751,9 +751,8 @@ export default function EventModal({
 
         <div className="pt-2">
           <button
-            className="w-full h-10 bg-bg !text-white !bg-purple rounded-md font-semibold hover:!bg-bg-800"
-            onClick={() => handleSaveEvent(newEvent)}
-          >
+            className="w-full h-10 bg-bg !text-white !bg-purple rounded-md font-semibold hover:!bg-purple-800 save-btn"
+            onClick={() => handleSaveEvent(newEvent)}>
             حفظ
           </button>
         </div>

@@ -154,3 +154,6 @@
   display: inline-flex !important;
   min-width: max-content !important;
 }
+.save-btn{
+  background-color: var(--color-purple);
+}
