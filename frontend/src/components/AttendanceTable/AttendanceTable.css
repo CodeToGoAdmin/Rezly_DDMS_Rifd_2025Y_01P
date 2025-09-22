@@ -15,7 +15,7 @@
 .attendance-header {
   display: flex;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
   border-radius: 8px;
 }
 
@@ -28,6 +28,7 @@
 
 .back-btn {
   background: #f5f5f5;
+  color: black;
   border: none;
   font-size: 20px;
   cursor: pointer;
@@ -46,7 +47,7 @@ color: #000;
 }
 
 .attendance-table thead {
-  background: #6A0EAD; 
+  background: var(--color-purple);
   color: white;
 }
 
@@ -59,16 +60,18 @@ color: #000;
   border-top-right-radius: 8px;
   border-bottom-right-radius: 8px;
 }
-
+.table-title{
+  font-weight: 600!important;
+}
 .attendance-table th, 
 .attendance-table td {
-  padding: 10px;
+  padding: 12px;
   border-bottom: 1px solid #eee;
 }
 
 /* تلوين الصفوف الزوجية */
 .attendance-table tbody tr:nth-child(even) {
-  background: #F8F9FA;
+  background: var(--color-bg);
 }
 
 /* الحالات */
@@ -81,9 +84,9 @@ color: #000;
 }
 
 .status-complete {
-  background: #4caf50;
+  background: var(--color-green);
 }
 
 .status-present {
-  background: #6A0EAD;
+  background: var(--color-purple)
 }
