@@ -68,7 +68,23 @@ color: #000;
   padding: 12px;
   border-bottom: 1px solid #eee;
 }
+.SubscribersTab-table th,
+.SubscribersTab-table td {
+  padding: 8px 2rem; /* بدل 12px */
+  border-bottom: 1px solid #eee;
+  text-align: center;
+}
+ .attendance-table tr {
+color: var(--Color-white, #FFF);
 
+/* body/12/bold */
+font-family: Cairo;
+font-size: 12px;
+font-style: normal;
+font-weight: 700;
+line-height: 150%; /* 18px */
+
+}
 /* تلوين الصفوف الزوجية */
 .attendance-table tbody tr:nth-child(even) {
   background: var(--color-bg);
@@ -89,4 +105,18 @@ color: #000;
 
 .status-present {
   background: var(--color-purple)
+}
+.table-text{
+
+color: var(--Color-black, #000);
+
+/* body/12/semibold */
+font-family: Cairo;
+font-size: 12px;
+font-style: normal;
+font-weight: 600;
+line-height: 150%; /* 18px */
+}
+.status-mouth{
+  background-color: var(--color-green);
 }
