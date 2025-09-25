@@ -13,6 +13,7 @@
   --color-black: #000000;
   --color-danger: #EF4444;
   --color-grey:  #7E818C;
+  
 
   font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
   line-height: 1.5;
@@ -69,17 +70,10 @@ h1 {
   line-height: 1.1;
 }
 
-button {
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  cursor: pointer;
 
-}
 
-button:hover {
-  background-color: white;
-}
+
+
 
 
 @media (prefers-color-scheme: light) {
@@ -92,9 +86,7 @@ button:hover {
     color: var(--color-purple);
   }
 
-  button {
-    background-color: #f9f9f9;
-  }
+ 
 }
 
 /*chart css*/
