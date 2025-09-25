@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+@import "tailwindcss";
+
+@import "tailwindcss";
+
+:root {
+  --color-bg: #F8F9FA;
+  --color-purple: #6A0EAD; ;   
+  --color-green: #4caf50;
+  --color-blue: #3B82F6;
+  --color-yellow: #FACC15;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-danger: #EF4444;
+  --color-grey:  #7E818C;
+  
+
+  font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+body {
+  font-family: 'Cairo';
+  background-color: #F8F9FA;
+  overflow-x: hidden;
+
+
+}
+
+
+.chart,
+.table {
+  max-width: 100%;
+}
+
+button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+
+a {
+  font-weight: 500;
+  color: var(--color-purple);
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: var(--color-purple);
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+
+
+
+
+
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: var(--color-purple);
+    background-color: #ffffff;
+  }
+
+  a:hover {
+    color: var(--color-purple);
+  }
+
+ 
+}
+
+/*chart css*/
+.filter-btn {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+  cursor: pointer;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+.filter-select {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+  cursor: pointer;
+  width: 100px;
+  color: black;
+  height: 32px;
+
+}
+
+.tab-btn {
+
+  border: 1px solid var(--color-purple);
+  border-radius: 8px;
+  background: #fff;
+  color: black;
+  cursor: pointer;
+  font-weight: normal;
+  width: 80px;
+  height: 32px;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  
+}
+
+.tab-btn.active {
+  background: var(--color-purple);
+  color: #fff !important;
+}
+
+.filter {
+  width: 208px;
+  height: 32px;
+}
+
+.filter-btn2 {
+  width: 32px;
+  height: 32px;
+
+}
+
+.chart {
+  width: 436px;
+}
+
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
