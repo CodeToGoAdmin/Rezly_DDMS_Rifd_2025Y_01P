@@ -1,4 +1,3 @@
-//import express from 'express';
 import 'dotenv/config';
 import request from "supertest";
 import mongoose from "mongoose";
@@ -119,7 +118,7 @@ describe("Auth Integration Tests (Development DB)", () => {
   it("should logout user", async () => {
     const res = await request(app)
       .post("/auth/logout")
-      .set("Authorization", Bearer ${token});
+      .set("Authorization", `Bearer ${token}`);
 
     console.log("Logout response:", res.body);
     expect(res.statusCode).toBe(200);

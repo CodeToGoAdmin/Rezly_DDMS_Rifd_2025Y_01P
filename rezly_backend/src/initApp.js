@@ -2,7 +2,8 @@
 import connectDB from "../DB/connection.js";
 import cors from 'cors';
 import authRouter from "./modules/auth/auth.router.js"
-import bookingRoutes from "./modules/booking/booking.router.js"
+import bookingRouter from "./modules/booking/booking.router.js"
+import packageRouter from './modules/package/package.router.js';
 import express from 'express';
 
 const initApp = () => {
@@ -18,7 +19,8 @@ const initApp = () => {
   app.use(express.json());
   
   app.use('/auth', authRouter);
-  app.use('/booking', bookingRoutes);
+  app.use('/booking', bookingRouter);
+  app.use('/package', packageRouter);
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
     const message = err.message || "Internal Server Error";
