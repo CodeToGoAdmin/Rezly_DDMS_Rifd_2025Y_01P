@@ -56,6 +56,29 @@ describe("Package Controller Unit Tests", () => {
         message: "Only admins can create packages"
       }));
     });
+
+    it("should return 400 if identical package exists", async () => {
+      req.user.role = "Admin";
+      req.body = { 
+        name: "VIP Monthly",
+        description: "Desc",
+        price_cents: 5000,
+        currency: "USD",
+        price_type: "Recurring",
+        duration_value: 1,
+        duration_unit: "Months",
+        auto_renew: true,
+        trial_days: 0,
+        active: true 
+      };
+      Package.findOne = jest.fn().mockResolvedValue({ ...req.body,_id: "existing" }); 
+      await packageController.createPackage(req, res);
+       expect(Package.findOne).toHaveBeenCalledWith(expect.objectContaining(req.body));
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      message: "Package with identical data already exists"
+    }));
+  });
   });
 
   // listPackages
