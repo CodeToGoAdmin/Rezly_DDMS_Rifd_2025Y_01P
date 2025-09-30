@@ -8,13 +8,13 @@ import  {confirmEmail} from '../auth/auth.controller.js'
 import { auth } from "../../Middleware/auth.js";
 router.post('/SignUp',validation(schema.signUpSchema),asyncHandler (authController.SignUp));
 
- router.post('/SignIn',validation(schema.SignInSchema),asyncHandler(authController.SignIn));
+router.post('/SignIn',validation(schema.SignInSchema),asyncHandler(authController.SignIn));
 
 router.post('/refresh', asyncHandler(authController.refresh))
 
 router.post('/logout',auth(),asyncHandler(authController.logout));
 
- router.put('/sendCode',validation(schema.sendCodeSchema),asyncHandler(authController.sendCode));
+router.put('/sendCode',validation(schema.sendCodeSchema),asyncHandler(authController.sendCode));
 
 router.put('/forgotpassword',validation(schema.forgotPasswordSchema),asyncHandler(authController.forgotpassword));
 
