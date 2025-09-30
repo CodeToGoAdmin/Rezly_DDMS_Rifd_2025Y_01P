@@ -19,7 +19,27 @@ export const createPackage = async (req, res) => {
       active,
     } = req.body;
 
-    // إنشاء باقة جديدة
+      // فحص إذا الباكيج موجودة بنفس كل القيم
+    const existingPackage = await Package.findOne({
+      name,
+      description,
+      price_cents,
+      currency,
+      price_type,
+      duration_value,
+      duration_unit,
+      auto_renew,
+      trial_days,
+      active,
+    });
+
+    if (existingPackage) {
+      return res.status(400).json({ 
+        message: "Package with identical data already exists" 
+      });
+    }
+
+    
     const newPackage = new Package({
       name,
       slug: arabicSlugify(name), // توليد slug تلقائي
@@ -84,7 +104,7 @@ export const updatePackage = async (req, res) => {
     const { id } = req.params;
     const updateData = { ...req.body };
 
-    // إذا الاسم موجود، يحدث الـ slug تلقائيًا
+    // إذا تم تحديث الاسم، حدث الـ slug
     if (updateData.name) {
       updateData.slug = arabicSlugify(updateData.name);
     }
