@@ -7,6 +7,7 @@ import 'dotenv/config';
 
 const app = initApp(); // <-- استدعاء initApp بدون تمرير express
 
+app.use(express.json());
 
 app.get('/', (req, res) => {
   res.send('Hello world! Server is running');

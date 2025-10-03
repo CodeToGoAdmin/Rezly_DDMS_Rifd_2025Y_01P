@@ -3,7 +3,7 @@ import * as offerController from './offer.controller.js';
 import { auth, roles } from '../../Middleware/auth.js';
 import validation from '../../Middleware/validation.js';
 import { asyncHandler } from "../../Utils/catchError.js";
-import * as schema from './offer.validation.js';
+import * as schema from './offer.vallidation.js';
 
 const router = express.Router();
 

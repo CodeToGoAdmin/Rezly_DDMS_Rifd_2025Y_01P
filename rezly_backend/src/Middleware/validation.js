@@ -10,7 +10,7 @@ export const generalFeilds={
          'string.empty':'password is required',
          'string.min':'password must be at least 6 digits'
     }),
-    phone: Joi.string().length(10).pattern(/^(056|059|052)[0-9]{7}$/).required().messages({
+    phone: Joi.string().length(10).pattern(/^(056|059|052)[0-9]{7}$/).optional().messages({
         'string.length': 'Phone number must be exactly 10 digits',
         'string.pattern.base': 'Phone number must start with 056 or 059 followed by 7 digits',
         'string.empty': 'Primaryphone number is required',

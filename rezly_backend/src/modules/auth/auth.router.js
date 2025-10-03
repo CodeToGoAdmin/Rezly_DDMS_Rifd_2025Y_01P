@@ -10,6 +10,10 @@ router.post('/SignUp',validation(schema.signUpSchema),asyncHandler (authControll
 
 router.post('/SignIn',validation(schema.SignInSchema),asyncHandler(authController.SignIn));
 
+
+router.post('/employeeSignUp',validation(schema.employeeSchema),asyncHandler (authController.employeeSignUp));
+
+
 router.post('/refresh', asyncHandler(authController.refresh))
 
 router.post('/logout',auth(),asyncHandler(authController.logout));

@@ -6,6 +6,80 @@ import { sendEmail } from "../../Utils/sendEmail.js";
 import { customAlphabet } from "nanoid";
 import { arabicSlugify } from "../../Utils/ArabicSlug.js";
 import mongoose from 'mongoose';
+import { employeeSchema } from "./auth.validation.js";
+
+
+export const employeeSignUp=async (req, res) => {
+  try {
+        const {
+      firstName,
+      lastName,
+      birthDate,
+      profileImage,
+      nationalId,
+      gender,
+      phoneNumber,
+      email,
+      address,
+      jobTitle,
+      department,
+      contractType,
+      startDate,
+      username,
+      password,
+      role,
+      notes
+    } = req.body;
+
+        const { error} = employeeSchema.validate(req.body, { abortEarly: false });
+        if (error) {
+          return res.status(400).json({ errors: error.details.map((e) => e.message) });
+        }
+    const existingUser = await Employee.findOne({  username });
+if (existingUser) {
+  return res.status(400).json({ errors: ["اسم المستخدم موجود بالفعل"] });
+}
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newEmployee = new Employee({
+      firstName,
+      lastName,
+      birthDate,
+      profileImage,
+      nationalId,
+      gender,
+      phoneNumber,
+      email,
+      address,
+      jobTitle,
+      department,
+      contractType,
+      startDate,
+      username,
+      password: hashedPassword,
+      role,
+      notes,
+    });
+
+    await newEmployee.save();
+
+    res.status(201).json({
+      message: "تم إنشاء حساب الموظف بنجاح",
+      employee: {
+        id: newEmployee._id,
+        firstName: newEmployee.firstName,
+        lastName: newEmployee.lastName,
+        email: newEmployee.email,
+        username: newEmployee.username,
+        role: newEmployee.role,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "حدث خطأ أثناء إنشاء الحساب", error });
+  }
+};
 
 
 export const SignUp = async (req, res, next) => {

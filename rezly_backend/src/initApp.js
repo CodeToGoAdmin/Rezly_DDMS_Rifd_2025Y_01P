@@ -3,10 +3,10 @@ import connectDB from "../DB/connection.js";
 import cors from 'cors';
 import authRouter from "./modules/auth/auth.router.js"
 import bookingRouter from "./modules/booking/booking.router.js"
-import packageRouter from './modules/package/package.router.js';
-import offerRouter from './modules/offer/offer.router.js';
-import express from 'express';
+//import packageRouter from './modules/package/package.router.js';
+import formRouter from './modules/forms/forms.routers.js';
 
+import express from 'express';
 const initApp = () => {
   const app = express();
   connectDB();
@@ -21,15 +21,16 @@ const initApp = () => {
   
   app.use('/auth', authRouter);
   app.use('/booking', bookingRouter);
-  app.use('/package', packageRouter);
-  app.use('/offer', offerRouter);
+  //app.use('/package', packageRouter);
+    app.use('/forms', formRouter);
 
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-    res.status(statusCode).json({ message });
-  });
+    res.status(statusCode).json({ message });
+  });
   return app;
 };
 
 export default initApp;
+
