@@ -1,4 +1,4 @@
- import mongoose from ("mongoose");
+ import mongoose from "mongoose";
 
 const employeeSchema = new mongoose.Schema({
   firstName: { type: String, required: true },         
@@ -16,8 +16,12 @@ const employeeSchema = new mongoose.Schema({
   startDate: { type: Date, required: true },           
   username: { type: String, required: true, unique: true }, 
   password: { type: String, required: true },           
-  role: { type: String, enum: ["مدير/ة", "مدرب/ة", "محاسب/ة", "موظف/ة استقبال"], required: true }, // مستوى الصلاحية
-  notes: { type: String }                              
+  role: { type: String,
+       enum: ["Admin", "Coach", "accountant", "receptionist"],
+ required: true },
+  notes: { type: String } ,
+    confirmEmail: { type: Boolean, default: false },
+  refreshToken: { type: String },                             
 }, { timestamps: true });
 
-module.exports = mongoose.model("Employee", employeeSchema);
+export const Employee = mongoose.model("Employee", employeeSchema);

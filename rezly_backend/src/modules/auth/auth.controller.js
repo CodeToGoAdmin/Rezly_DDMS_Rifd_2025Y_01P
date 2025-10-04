@@ -7,11 +7,11 @@ import { customAlphabet } from "nanoid";
 import { arabicSlugify } from "../../Utils/ArabicSlug.js";
 import mongoose from 'mongoose';
 import { employeeSchema } from "./auth.validation.js";
+import { Employee } from "../../../DB/models/employee.model.js";
 
-
-export const employeeSignUp=async (req, res) => {
+export const employeeSignUp = async (req, res) => {
   try {
-        const {
+    const {
       firstName,
       lastName,
       birthDate,
@@ -28,20 +28,36 @@ export const employeeSignUp=async (req, res) => {
       username,
       password,
       role,
-      notes
+      notes,
     } = req.body;
 
-        const { error} = employeeSchema.validate(req.body, { abortEarly: false });
-        if (error) {
-          return res.status(400).json({ errors: error.details.map((e) => e.message) });
-        }
-    const existingUser = await Employee.findOne({  username });
-if (existingUser) {
-  return res.status(400).json({ errors: ["اسم المستخدم موجود بالفعل"] });
-}
+    // ✅ التحقق من صحة البيانات
+    const { error } = employeeSchema.validate(req.body, { abortEarly: false });
+    if (error) {
+      return res.status(400).json({
+        errors: error.details.map((e) => e.message),
+      });
+    }
 
+    // ✅ تشفير كلمة المرور
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // ✅ توليد refreshToken
+    const refreshToken = jwt.sign(
+      { username },
+       process.env.REFRESHTOKEN_SECRET,
+      { expiresIn: "30d" }
+    );
+
+     const emailToken = jwt.sign(
+            { email },
+            process.env.CONFIRMEMAILTOKEN,
+            { expiresIn: '1h' }  // صلاحية ساعة واحدة
+        );
+
+        const confirmLink = `https://rezly-ddms-rifd-2025y-01p.onrender.com/auth/confirmEmail/${emailToken}`;
+
+    // ✅ إنشاء حساب جديد
     const newEmployee = new Employee({
       firstName,
       lastName,
@@ -60,27 +76,53 @@ if (existingUser) {
       password: hashedPassword,
       role,
       notes,
+      confirmEmail: false,
+      refreshToken,
     });
 
     await newEmployee.save();
 
+    // ✅ إرسال البريد الإلكتروني
+    await sendEmail(
+      email,
+      "تأكيد البريد الإلكتروني من نظام Rezly",
+      `مرحبًا ${firstName}, يرجى الضغط على الرابط لتأكيد بريدك الإلكتروني: ${confirmLink}`
+    );
+
     res.status(201).json({
-      message: "تم إنشاء حساب الموظف بنجاح",
-      employee: {
-        id: newEmployee._id,
-        firstName: newEmployee.firstName,
-        lastName: newEmployee.lastName,
-        email: newEmployee.email,
-        username: newEmployee.username,
-        role: newEmployee.role,
-      },
+      message: "تم إنشاء الحساب بنجاح، يرجى تأكيد بريدك الإلكتروني عبر الرابط المرسل.",
     });
+
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "حدث خطأ أثناء إنشاء الحساب", error });
+
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      let message = "";
+
+      switch (field) {
+        case "username":
+          message = "اسم المستخدم موجود بالفعل";
+          break;
+        case "email":
+          message = "البريد الإلكتروني مستخدم بالفعل";
+          break;
+        case "nationalId":
+          message = "رقم الهوية مستخدم بالفعل";
+          break;
+        default:
+          message = "قيمة مكررة في أحد الحقول";
+      }
+
+      return res.status(400).json({ errors: [message] });
+    }
+
+    res.status(500).json({
+      message: "حدث خطأ أثناء إنشاء الحساب",
+      error,
+    });
   }
 };
-
 
 export const SignUp = async (req, res, next) => {
     try {
