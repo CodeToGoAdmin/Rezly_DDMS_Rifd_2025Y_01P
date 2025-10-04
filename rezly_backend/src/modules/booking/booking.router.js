@@ -36,9 +36,7 @@ router.post(
   asyncHandler(createBooking)
 );
 
-// ================= Dynamic / parameterized routes =================
 
-// جلب تفاصيل حجز حسب ID
 router.get(
   '/:id',
   auth([roles.Admin, roles.Coach, roles.Member]),

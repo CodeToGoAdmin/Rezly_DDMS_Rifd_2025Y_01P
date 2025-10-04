@@ -70,13 +70,12 @@ export const employeeSchema = Joi.object({
     "any.required": "تاريخ الميلاد مطلوب",
     "date.base": "تاريخ الميلاد غير صالح",
   }),
-  profileImage: Joi.string().uri().optional().messages({
-    "string.uri": "رابط الصورة غير صالح",
-  }),
+image: Joi.any().optional().strip(),
+
   nationalId: Joi.string().required().messages({
     "any.required": "رقم الهوية مطلوب",
   }),
-  gender: Joi.string().valid("ذكر", "انثى").required().messages({
+  gender: Joi.string().valid("ذكر", "أنثى").required().messages({
     "any.only": "اختر جنس صحيح",
   }),
   phoneNumber: Joi.string()

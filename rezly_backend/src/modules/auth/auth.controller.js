@@ -9,13 +9,14 @@ import mongoose from 'mongoose';
 import { employeeSchema } from "./auth.validation.js";
 import { Employee } from "../../../DB/models/employee.model.js";
 
+import crypto from "crypto";
+
 export const employeeSignUp = async (req, res) => {
   try {
     const {
       firstName,
       lastName,
       birthDate,
-      profileImage,
       nationalId,
       gender,
       phoneNumber,
@@ -30,8 +31,8 @@ export const employeeSignUp = async (req, res) => {
       role,
       notes,
     } = req.body;
-
-    // ✅ التحقق من صحة البيانات
+    console.log("fhbfhjvbhjgvf");
+    
     const { error } = employeeSchema.validate(req.body, { abortEarly: false });
     if (error) {
       return res.status(400).json({
@@ -39,30 +40,43 @@ export const employeeSignUp = async (req, res) => {
       });
     }
 
-    // ✅ تشفير كلمة المرور
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ✅ توليد refreshToken
     const refreshToken = jwt.sign(
       { username },
-       process.env.REFRESHTOKEN_SECRET,
+      process.env.REFRESHTOKEN_SECRET,
       { expiresIn: "30d" }
     );
 
-     const emailToken = jwt.sign(
-            { email },
-            process.env.CONFIRMEMAILTOKEN,
-            { expiresIn: '1h' }  // صلاحية ساعة واحدة
-        );
+    const emailToken = jwt.sign(
+      { email },
+      process.env.CONFIRMEMAILTOKEN,
+      { expiresIn: "1h" }
+    );
+    const confirmLink = `https://rezly-ddms-rifd-2025y-01p.onrender.com/auth/confirmEmail/${emailToken}`;
 
-        const confirmLink = `https://rezly-ddms-rifd-2025y-01p.onrender.com/auth/confirmEmail/${emailToken}`;
+    // ===== معالجة الصورة (تشفر وتخزن كـ Base64) =====
+    let encryptedImage = "";
+ 
+if (req.file) {
+  const key = Buffer.from(process.env.IMAGE_ENCRYPTION_KEY, "hex"); // لازم تكون 32 بايت (64 رمز hex)
+  const iv = crypto.randomBytes(16);
 
-    // ✅ إنشاء حساب جديد
+  const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+  let encrypted = cipher.update(req.file.buffer);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+
+  encryptedImage = {
+    data: encrypted.toString("base64"),
+    iv: iv.toString("hex"),
+    mimetype: req.file.mimetype,
+  };
+}
     const newEmployee = new Employee({
       firstName,
       lastName,
       birthDate,
-      profileImage,
+      image: encryptedImage,
       nationalId,
       gender,
       phoneNumber,
@@ -82,7 +96,7 @@ export const employeeSignUp = async (req, res) => {
 
     await newEmployee.save();
 
-    // ✅ إرسال البريد الإلكتروني
+    // ===== إرسال البريد الإلكتروني =====
     await sendEmail(
       email,
       "تأكيد البريد الإلكتروني من نظام Rezly",
@@ -90,12 +104,13 @@ export const employeeSignUp = async (req, res) => {
     );
 
     res.status(201).json({
-      message: "تم إنشاء الحساب بنجاح، يرجى تأكيد بريدك الإلكتروني عبر الرابط المرسل.",
+      message:
+        "تم إنشاء الحساب بنجاح، يرجى تأكيد بريدك الإلكتروني عبر الرابط المرسل.",
     });
-
   } catch (error) {
     console.error(error);
 
+    // ===== معالجة أخطاء التكرار =====
     if (error.code === 11000) {
       const field = Object.keys(error.keyPattern)[0];
       let message = "";
@@ -121,6 +136,25 @@ export const employeeSignUp = async (req, res) => {
       message: "حدث خطأ أثناء إنشاء الحساب",
       error,
     });
+  }
+};
+export const getAllEmployees = async (req,res) => {
+  try {
+    const employees = await Employee.find({}, {
+      firstName: 1,
+      lastName: 1,
+      phoneNumber: 1,
+      email: 1,
+      department: 1,
+      jobTitle: 1
+    });
+
+    const totalCount = employees.length;
+
+    res.status(200).json({ totalCount, employees });
+  } catch (error) {
+    console.error("Error fetching employees:", error);
+    res.status(500).json({ message: "فشل في جلب بيانات الموظفين", error: error.message });
   }
 };
 

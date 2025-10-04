@@ -4,8 +4,12 @@ const employeeSchema = new mongoose.Schema({
   firstName: { type: String, required: true },         
   lastName: { type: String, required: true },           
   birthDate: { type: Date, required: true },           
-  profileImage: { type: String },                       
-  nationalId: { type: String, required: true, unique: true }, 
+  image: {
+    data: { type: Buffer , required: false },
+    iv: { type: String, required: false },
+    mimetype: { type: String, required: false }
+  },
+    nationalId: { type: String, required: true, unique: true }, 
   gender: { type: String, enum: ["ذكر", "أنثى"], required: true }, 
   phoneNumber: { type: String, required: true },      
   email: { type: String, required: true, unique: true },

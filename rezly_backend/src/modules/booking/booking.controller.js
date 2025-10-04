@@ -74,33 +74,42 @@ function convertToMinutes(timeStr) {
   return hours * 60 + minutes;
 }
 
-
 export const createBooking = async (req, res, next) => {
   try {
-    console.log("njkfdnkjf");
+    const {
+      service,
+      description,
+      coachId,
+      location,
+      date,           // تاريخ بداية الحصة
+      timeStart,      // الوقت كبداية
+      timeEnd,        // الوقت كنهاية
+      recurrence = [], // ["Mon", "Wed"]
+      reminders = ["30m", "1h", "1d"],
+      numbersOfMembers = 1,
+      members = []
+    } = req.body;
 
-  let { service, coachId, date, timeStart, timeEnd, location, numberOfMembers, members } = req.body;
-if (req.user.role === "Admin") {
-console.log("admin");
-  if (!coachId) {
-    return res.status(400).json({ status: "error", message: "Coach ID is required" });
-  }
-} else if (req.user.role === "Coach") {
-  // الكوتش يقدر ينشئ حجز لنفسه فقط
-  coachId = req.user._id; // صح الآن
-} else {
-  return res.status(403).json({ status: "error", message: "Not authorized to create bookings" });
-}
+    // ===== صلاحيات المستخدم =====
+    let finalCoachId = coachId;
+    if (req.user.role === "Admin") {
+      if (!coachId) return res.status(400).json({ status: "error", message: "Coach ID is required" });
+    } else if (req.user.role === "Coach") {
+      // الكوتش يقدر ينشئ حجز لنفسه فقط
+      finalCoachId = req.user._id;
+    } else {
+      return res.status(403).json({ status: "error", message: "Not authorized to create bookings" });
+    }
 
     // ===== تحقق من الكوتش =====
-    const coach = await userModel.findById(coachId).lean();
+    const coach = await userModel.findById(finalCoachId).lean();
     if (!coach || coach.role.toLowerCase() !== "coach") {
       return res.status(400).json({ status: "error", message: "Coach not found or invalid role" });
     }
 
     // ===== تحقق من التاريخ والوقت =====
-    const bookingDate = new Date(date);
-    if (isNaN(bookingDate.getTime())) {
+    const baseDate = new Date(date);
+    if (isNaN(baseDate.getTime())) {
       return res.status(400).json({ status: "error", message: "Invalid date format" });
     }
 
@@ -113,79 +122,94 @@ console.log("admin");
     if (endDateTime <= startDateTime) {
       return res.status(400).json({ status: "error", message: "End time must be after start time" });
     }
+
     const now = new Date();
     if (startDateTime < now) {
       return res.status(400).json({ status: "error", message: "Booking time cannot be in the past" });
     }
 
+    const weekDaysMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+    const createdBookings = [];
+
     // ===== تحقق من التعارض مع حجوزات الكوتش =====
-    const existingBookings = await Booking.find({ coach: coachId, date: bookingDate }).lean();
-    const conflict = existingBookings.some(b => {
-      const s = new Date(b.timeStart);
-      const e = new Date(b.timeEnd);
-      return Math.max(s, startDateTime) < Math.min(e, endDateTime);
-    });
-    if (conflict) {
-      return res.status(400).json({ status: "error", message: "Coach has a conflicting booking at this time" });
-    }
+    for (let i = 0; i < 365; i++) { // سنة كاملة للأيام المتكررة
+      const currentDate = new Date(baseDate);
+      currentDate.setDate(baseDate.getDate() + i);
+      const dayName = Object.keys(weekDaysMap).find(k => weekDaysMap[k] === currentDate.getDay());
 
-    // ===== تحقق من تعارض الغرفة =====
-    const roomBookings = await Booking.find({ location, date: bookingDate }).lean();
-    const roomConflict = roomBookings.some(b => {
-      const s = new Date(b.timeStart);
-      const e = new Date(b.timeEnd);
-      return Math.max(s, startDateTime) < Math.min(e, endDateTime);
-    });
-    if (roomConflict) {
-      return res.status(400).json({ status: "error", message: "Room is already booked at this time" });
-    }
+      if (recurrence.length === 0 || recurrence.includes(dayName)) {
 
-    // ===== إنشاء الحجز =====
-    const newBooking = await Booking.create({
-      service,
-      coach: coachId,
-      date: bookingDate,
-      timeStart: startDateTime,
-      timeEnd: endDateTime,
-      location,
-      numberOfMembers
-    });
+        // تحقق تعارض الكوتش
+        const existingBookings = await Booking.find({ coach: finalCoachId, date: currentDate }).lean();
+        const conflict = existingBookings.some(b => {
+          const s = new Date(`${currentDate.toISOString().split("T")[0]}T${b.timeStart}`);
+          const e = new Date(`${currentDate.toISOString().split("T")[0]}T${b.timeEnd}`);
+          return Math.max(s, startDateTime) < Math.min(e, endDateTime);
+        });
+        if (conflict) continue;
 
-    // ===== التحقق من الأعضاء وإضافتهم =====
-    if (Array.isArray(members) && members.length > 0) {
-      const validMembers = [];
+        // ===== تحقق من تعارض الغرفة =====
+        const roomBookings = await Booking.find({ location, date: currentDate }).lean();
+        const roomConflict = roomBookings.some(b => {
+          const s = new Date(`${currentDate.toISOString().split("T")[0]}T${b.timeStart}`);
+          const e = new Date(`${currentDate.toISOString().split("T")[0]}T${b.timeEnd}`);
+          return Math.max(s, startDateTime) < Math.min(e, endDateTime);
+        });
+        if (roomConflict) continue;
 
-      for (const memberId of members) {
-        if (!mongoose.Types.ObjectId.isValid(memberId)) continue;
-        const member = await userModel.findById(memberId).lean();
-        if (member && member.role.toLowerCase() === "member") validMembers.push(memberId);
-      }
+        // ===== إنشاء الحجز =====
+        const newBooking = await Booking.create({
+          service,
+          description,
+          coach: finalCoachId,
+          location,
+          date: currentDate,
+          timeStart,
+          timeEnd,
+          numbersOfMembers,
+          recurrence,
+          reminders
+        });
 
-      if (validMembers.length > 0) {
-        // منع التكرار
-        const existingBookingMembers = await BookingMember.find({ booking: newBooking._id }).lean();
-        const existingMemberIds = existingBookingMembers.map(bm => bm.member.toString());
-
-        const membersToAdd = validMembers.filter(id => !existingMemberIds.includes(id));
-        if (membersToAdd.length > 0) {
-          const bookingMembers = membersToAdd.map(memberId => ({
-            booking: newBooking._id,
-            member: memberId
-          }));
-          await BookingMember.insertMany(bookingMembers);
+        // ===== التحقق من الأعضاء وإضافتهم =====
+        if (Array.isArray(members) && members.length > 0) {
+          const validMembers = [];
+          for (const memberId of members) {
+            if (!mongoose.Types.ObjectId.isValid(memberId)) continue;
+            const member = await userModel.findById(memberId).lean();
+            if (member && member.role.toLowerCase() === "member") validMembers.push(memberId);
+          }
+          if (validMembers.length > 0) {
+            const existingBookingMembers = await BookingMember.find({ booking: newBooking._id }).lean();
+            const existingMemberIds = existingBookingMembers.map(bm => bm.member.toString());
+            const membersToAdd = validMembers.filter(id => !existingMemberIds.includes(id));
+            if (membersToAdd.length > 0) {
+              const bookingMembers = membersToAdd.map(memberId => ({
+                booking: newBooking._id,
+                member: memberId
+              }));
+              await BookingMember.insertMany(bookingMembers);
+            }
+          }
         }
+
+        createdBookings.push(newBooking);
       }
+    }
+
+    if (createdBookings.length === 0) {
+      return res.status(400).json({ status: "error", message: "No bookings created due to conflicts or invalid dates" });
     }
 
     return res.status(201).json({
       status: "success",
-      data: newBooking,
-      message: "Booking created successfully"
+      data: createdBookings,
+      message: "Bookings created successfully"
     });
 
   } catch (err) {
     console.error("Booking creation error:", err);
-    next(err);
+    res.status(500).json({ status: "error", message: err.message });
   }
 };
 

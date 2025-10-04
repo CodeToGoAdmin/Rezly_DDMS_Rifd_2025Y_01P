@@ -5,14 +5,35 @@ import validation from '../../Middleware/validation.js';
 import { asyncHandler } from "../../Utils/catchError.js";
 import * as schema from './auth.validation.js'
 import  {confirmEmail} from '../auth/auth.controller.js'
-import { auth } from "../../Middleware/auth.js";
+import { auth, roles } from "../../Middleware/auth.js";
+const storage = multer.memoryStorage();
+
+import multer from "multer";
 router.post('/SignUp',validation(schema.signUpSchema),asyncHandler (authController.SignUp));
 
 router.post('/SignIn',validation(schema.SignInSchema),asyncHandler(authController.SignIn));
 
+router.get('/getAllEmployees',auth([roles.Admin]),
+asyncHandler(authController.getAllEmployees));
 
-router.post('/employeeSignUp',validation(schema.employeeSchema),asyncHandler (authController.employeeSignUp));
 
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 ميجا كحد أقصى
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) {
+      return cb(new Error("الملف يجب أن يكون صورة"), false);
+    }
+    cb(null, true);
+  },
+});
+
+router.post(
+  "/employeeSignUp",
+  upload.single("image"), // حقل الصورة
+validation(schema.employeeSchema, { allowUnknown: true }),
+  asyncHandler(authController.employeeSignUp)
+);
 
 router.post('/refresh', asyncHandler(authController.refresh))
 

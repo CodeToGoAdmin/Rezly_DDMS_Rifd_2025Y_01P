@@ -31,6 +31,8 @@ coach: {
     enum: ["pending", "confirmed", "cancelled"],
     default: "pending",
   },
+    description: { type: String },
+
   createdAt: {
     type: Date,
     default: Date.now,
@@ -38,7 +40,9 @@ coach: {
   numbersOfMembers:{
     type:Number,
     default:1
-  }
+  },  
+  recurrence: [{ type: String }],            // مثال: ["Mon", "Wed", "Fri"]
+  reminders: [{ type: String }], 
 });
 
 const Booking = mongoose.model("Booking", bookingSchema);
