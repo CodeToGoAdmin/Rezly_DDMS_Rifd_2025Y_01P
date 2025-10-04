@@ -16,6 +16,7 @@ const initApp = () => {
     methods: ['GET','POST','PUT','DELETE','PATCH'],
     allowedHeaders: ['Content-Type','Authorization','ngrok-skip-browser-warning']
   }));
+console.log("njkfdnkjf");
 
   app.use(express.json());
   

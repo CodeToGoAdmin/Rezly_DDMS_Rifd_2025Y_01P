@@ -30,7 +30,7 @@ router.get(
 
 // إنشاء حجز جديد (Admin فقط)
 router.post(
-  '/',
+  '/add-booking',
   auth([roles.Admin,roles.Coach]),
   validateBody(createBookingSchema),
   asyncHandler(createBooking)

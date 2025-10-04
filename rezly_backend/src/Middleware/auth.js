@@ -6,7 +6,8 @@ export const roles = {
   Admin: "admin",
   Coach: "coach",
   Member: "member",
-  Receptionist: "receptionist"
+  Receptionist: "receptionist",
+  Accountant:"accountant"
 };
 export const auth = (allowedRoles = []) => {
   return async (req, res, next) => {

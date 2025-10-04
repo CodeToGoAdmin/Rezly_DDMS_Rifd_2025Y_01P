@@ -77,8 +77,9 @@ function convertToMinutes(timeStr) {
 
 export const createBooking = async (req, res, next) => {
   try {
-  let { service, coachId, date, timeStart, timeEnd, location, numberOfMembers, members } = req.body;
+    console.log("njkfdnkjf");
 
+  let { service, coachId, date, timeStart, timeEnd, location, numberOfMembers, members } = req.body;
 if (req.user.role === "Admin") {
 console.log("admin");
   if (!coachId) {

@@ -45,6 +45,17 @@ const userSchema= new Schema({
             default:'Coach',
             enum:['Coach','Admin','Member','Receptionist']
         },
+          role: {
+    type: String,
+    default: "Coach",
+  },
+  // الحقل الجديد مرجعي إلى Role
+  roleId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Role",
+    default: null,
+  },
+
          refreshToken: { 
             type: String 
         },
