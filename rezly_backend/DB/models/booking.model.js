@@ -7,7 +7,7 @@ const bookingSchema = new mongoose.Schema({
   },
 coach: { 
   type: mongoose.Schema.Types.ObjectId,
-   ref: "User", 
+   ref: "Employee", 
   required: true 
 },
   date: {
@@ -31,8 +31,17 @@ coach: {
     enum: ["pending", "confirmed", "cancelled"],
     default: "pending",
   },
-    description: { type: String },
+    description: { 
+      type: String ,
+      required:false
 
+    },
+createdBy:{
+    type: mongoose.Schema.Types.ObjectId,
+   ref: "Employee", 
+  required: false 
+
+},
   createdAt: {
     type: Date,
     default: Date.now,
@@ -43,6 +52,7 @@ coach: {
   },  
   recurrence: [{ type: String }],            // مثال: ["Mon", "Wed", "Fri"]
   reminders: [{ type: String }], 
+  subscriptionDuration :[{ type: String }], 
 });
 
 const Booking = mongoose.model("Booking", bookingSchema);

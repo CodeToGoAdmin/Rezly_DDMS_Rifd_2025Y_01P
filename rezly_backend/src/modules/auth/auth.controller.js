@@ -140,7 +140,12 @@ if (req.file) {
 };
 export const getAllEmployees = async (req,res) => {
   try {
-    const employees = await Employee.find({}, {
+    const { role } = req.query;
+
+    // بناء شرط البحث
+    const query = role ? { role } : {};
+
+    const employees = await Employee.find(query, {
       firstName: 1,
       lastName: 1,
       phoneNumber: 1,
