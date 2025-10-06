@@ -43,12 +43,12 @@ export const employeeSignUp = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const refreshToken = jwt.sign(
-      { username },
-      process.env.REFRESHTOKEN_SECRET,
+       { id: new mongoose.Types.ObjectId() },
+             process.env.REFRESHTOKEN_SECRET,
       { expiresIn: "30d" }
     );
 
-    const emailToken = jwt.sign(
+    const token = jwt.sign(
       { email },
       process.env.CONFIRMEMAILTOKEN,
       { expiresIn: "1h" }
@@ -95,10 +95,10 @@ if (req.file) {
 
     await newEmployee.save();
 
-       const confirmLink = `https://rezly-ddms-rifd-2025y-01p.onrender.com/auth/confirmEmail/${emailToken}`;
+       const confirmLink = `https://rezly-ddms-rifd-2025y-01p.onrender.com/auth/confirmEmail/${token}`;
         console.log("Confirm link:", confirmLink); // لا يزال للـ testing
 
-        await sendEmail(email, `confirm email from Booking`, username, emailToken);
+        await sendEmail(email, `confirm email from Booking`, username, token);
 
         console.log("User created with refresh token:", newEmployee.refreshToken);
 
@@ -137,6 +137,8 @@ if (req.file) {
     });
   }
 };
+
+
 export const getAllEmployees = async (req,res) => {
   try {
     const { role } = req.query;
@@ -251,30 +253,44 @@ export const SignUp = async (req, res, next) => {
         next(error);
     }
 };
-
 export const confirmEmail = async (req, res, next) => {
-    try {
-        const { token } = req.params;
-        const decoded = jwt.verify(token, process.env.CONFIRMEMAILTOKEN);
+  try {
+    const { token } = req.params;
+    const decoded = jwt.verify(token, process.env.CONFIRMEMAILTOKEN);
 
-        const updatedUser = await userModel.findOneAndUpdate(
-            { email: decoded.email },
-            { confirmEmail: true },
-            { new: true, lean: true }  // lean لتحسين الأداء
-        );
+    // حاول البحث أولًا في جدول المستخدمين العاديين
+    let updatedUser = await userModel.findOneAndUpdate(
+      { email: decoded.email },
+      { confirmEmail: true },
+      { new: true, lean: true }
+    );
 
-        if (!updatedUser) {
-            return next(new AppError("User not found", 404));
-        }
+    let source = "user";
 
-        console.log("Email confirmed:", decoded.email);
-        console.log("Token used:", token);
-
-        return res.status(200).json({ message: "success" });
-    } catch (error) {
-        return res.status(400).json({ message: "Invalid or expired token" });
+    // إذا ما وجدناه في المستخدمين، جرب جدول الموظفين
+    if (!updatedUser) {
+      updatedUser = await Employee.findOneAndUpdate(
+        { email: decoded.email },
+        { confirmEmail: true },
+        { new: true, lean: true }
+      );
+      source = "employee";
     }
+
+    if (!updatedUser) {
+      return next(new AppError("User not found", 404));
+    }
+
+    console.log(`Email confirmed for ${source}:`, decoded.email);
+    console.log("Token used:", token);
+
+    return res.status(200).json({ message: "success", source });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({ message: "Invalid or expired token" });
+  }
 };
+
 
 export const SignIn = async (req, res, next) => {
   try {

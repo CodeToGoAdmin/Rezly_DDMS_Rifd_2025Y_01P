@@ -2,6 +2,8 @@ import jwt from 'jsonwebtoken';
 
 import userModel from '../../DB/models/user.model.js';
 
+import { Role } from '../../DB/models/role.model.js';
+import { Permission } from '../../DB/models/permission.model.js';
 export const roles = {
   Admin: "admin",
   Coach: "coach",
