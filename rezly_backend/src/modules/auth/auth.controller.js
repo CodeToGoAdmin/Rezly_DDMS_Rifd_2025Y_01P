@@ -53,7 +53,6 @@ export const employeeSignUp = async (req, res) => {
       process.env.CONFIRMEMAILTOKEN,
       { expiresIn: "1h" }
     );
-    const confirmLink = `https://rezly-ddms-rifd-2025y-01p.onrender.com/auth/confirmEmail/${emailToken}`;
 
     // ===== معالجة الصورة (تشفر وتخزن كـ Base64) =====
     let encryptedImage = "";
@@ -96,12 +95,12 @@ if (req.file) {
 
     await newEmployee.save();
 
-    // ===== إرسال البريد الإلكتروني =====
-    await sendEmail(
-      email,
-      "تأكيد البريد الإلكتروني من نظام Rezly",
-      `مرحبًا ${firstName}, يرجى الضغط على الرابط لتأكيد بريدك الإلكتروني: ${confirmLink}`
-    );
+       const confirmLink = `https://rezly-ddms-rifd-2025y-01p.onrender.com/auth/confirmEmail/${emailToken}`;
+        console.log("Confirm link:", confirmLink); // لا يزال للـ testing
+
+        await sendEmail(email, `confirm email from Booking`, username, emailToken);
+
+        console.log("User created with refresh token:", newEmployee.refreshToken);
 
     res.status(201).json({
       message:
@@ -279,7 +278,7 @@ export const confirmEmail = async (req, res, next) => {
 
 export const SignIn = async (req, res, next) => {
   try {
-    const { identifier, password } = req.body; // identifier = email or username
+    const { identifier, password ,rememberMe} = req.body; // identifier = email or username
 
     if (!identifier || !password) {
       return next(new AppError("Username/Email and Password are required", 400));
@@ -309,19 +308,17 @@ export const SignIn = async (req, res, next) => {
     const match = await bcrypt.compare(password, user.password);
     if (!match) return next(new AppError('Invalid password', 401));
 
-    // إنشاء access token
-    const token = jwt.sign(
-      { id: user._id, role: user.role, source },
-      process.env.LOGINTOKEN,
-      { expiresIn: '30m' }
-    );
+   const token = jwt.sign(
+  { id: user._id, role: user.role, source },
+  process.env.LOGINTOKEN,
+  { expiresIn: rememberMe ? '7d' : '30m' }
+);
 
-    // إنشاء refresh token جديد
-    const refreshToken = jwt.sign(
-      { id: user._id },
-      process.env.REFRESHTOKEN_SECRET,
-      { expiresIn: '30d' }
-    );
+const refreshToken = jwt.sign(
+  { id: user._id },
+  process.env.REFRESHTOKEN_SECRET,
+  { expiresIn: rememberMe ? '30d' : '7d' }
+);
 
     // تحديث refresh token في DB
     const ModelToUpdate = source === "user" ? userModel : Employee;

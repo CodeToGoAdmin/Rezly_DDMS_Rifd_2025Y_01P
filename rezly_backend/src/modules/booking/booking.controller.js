@@ -558,26 +558,25 @@ export const deleteBooking = async (req, res, next) => {
     }
 
     if (role === "admin") {
-      await Promise.all([
-        BookingMember.deleteMany({ booking: bookingId }),
-        Booking.findByIdAndDelete(bookingId)
-      ]);
+      // 🔹 حذف كل أعضاء الحجز أولاً ثم الحجز نفسه
+      await BookingMember.deleteMany({ booking: bookingId });
+      await Booking.findByIdAndDelete(bookingId);
 
       return res.status(200).json({
         status: "success",
-        message: "Booking deleted successfully (by Admin)",
+        message: "Booking and related members deleted successfully (by Admin)",
       });
     }
 
     if (role === "coach") {
-      if (booking.coachId.toString() !== user._id.toString()) {
+      if (booking.coach.toString() !== user._id.toString()) {
         return res.status(403).json({
           status: "error",
           message: "You are not authorized to cancel this booking",
         });
       }
 
-      // 🔹 تحديث حالة الحجز إلى cancelled بدون حذف
+      // 🔹 تحديث حالة الحجز إلى cancelled بدون حذف أعضاء الحجز
       await Booking.updateOne(
         { _id: bookingId },
         { $set: { status: "cancelled", cancelledAt: new Date() } }
@@ -599,6 +598,7 @@ export const deleteBooking = async (req, res, next) => {
     next(err);
   }
 };
+
 
 
 export const filterBookings = async (req, res) => {
