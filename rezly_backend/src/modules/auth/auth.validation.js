@@ -30,12 +30,16 @@ midicalIssue: Joi.string().max(255).allow('').messages({
 
 
 })
-
-export const SignInSchema= Joi.object({
-
-      email: generalFeilds.email,
-      password: generalFeilds.password,
-  });
+export const SignInSchema = Joi.object({
+  identifier: Joi.required().messages({
+    "any.required": "Username or Email is required",
+    "string.empty": "Username or Email cannot be empty"
+  }),
+  password: generalFeilds.password.required().messages({
+    "any.required": "Password is required",
+    "string.empty": "Password cannot be empty"
+  })
+});
 
   export const sendCodeSchema = Joi.object({
 

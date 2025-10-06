@@ -25,7 +25,8 @@ const employeeSchema = new mongoose.Schema({
  required: true },
   notes: { type: String } ,
     confirmEmail: { type: Boolean, default: false },
-  refreshToken: { type: String },                             
+  refreshToken: { type: String },    
+  active:{type:Boolean,default:true}                         
 }, { timestamps: true });
 
 export const Employee = mongoose.model("Employee", employeeSchema);

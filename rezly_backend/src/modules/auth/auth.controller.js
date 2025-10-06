@@ -162,6 +162,44 @@ export const getAllEmployees = async (req,res) => {
     res.status(500).json({ message: "فشل في جلب بيانات الموظفين", error: error.message });
   }
 };
+export const toggleEmployeeStatus = async (req, res) => {
+  try {
+    const { id, active } = req.query; // الاثنين من الكويري
+
+    if (!id) {
+      return res.status(400).json({ message: "لم يتم إرسال رقم الموظف (id)" });
+    }
+
+    if (active === undefined) {
+      return res.status(400).json({ message: "لم يتم تحديد حالة الحساب (active)" });
+    }
+
+    // نحول القيمة من string إلى Boolean
+    const isActive = active === "true";
+
+    // تحديث الحالة
+    const employee = await Employee.findByIdAndUpdate(
+      id,
+  { active: isActive },
+      { new: true }
+    );
+
+    if (!employee) {
+      return res.status(404).json({ message: "الموظف غير موجود" });
+    }
+
+    res.status(200).json({
+      message: `تم ${isActive ? "تفعيل" : "تعطيل"} الحساب بنجاح`,
+      employee,
+    });
+  } catch (err) {
+    console.error("Error updating employee status:", err);
+    res.status(500).json({
+      message: "حدث خطأ أثناء تحديث حالة الحساب",
+      error: err.message,
+    });
+  }
+};
 
 export const SignUp = async (req, res, next) => {
     try {
@@ -238,54 +276,68 @@ export const confirmEmail = async (req, res, next) => {
         return res.status(400).json({ message: "Invalid or expired token" });
     }
 };
-// login function
+
 export const SignIn = async (req, res, next) => {
-    try {
-        const { email, password } = req.body;
-if (!password) return next(new AppError("Password is required", 400));
+  try {
+    const { identifier, password } = req.body; // identifier = email or username
 
-        const user = await userModel.findOne({ email })
-            .select("password refreshToken role _id confirmEmail")
-            .lean();
-        
-        if (!user) return next(new AppError('Email not found', 404));
-
-        if (!user.confirmEmail) {
-            return next(new AppError('Please confirm your email', 409)); // 409 Conflict
-        }
-
-        const match = await bcrypt.compare(password, user.password);
-       
-        if (!match) {
-            return next(new AppError('Invalid password', 401));
-        }
-
-        // إنشاء access token
-        const token = jwt.sign(
-            { id: user._id, role: user.role },
-            process.env.LOGINTOKEN,
-            { expiresIn: '30m' }
-        );
-
-        // إنشاء refresh token جديد
-        const refreshToken = jwt.sign(
-            { id: user._id },
-            process.env.REFRESHTOKEN_SECRET,
-            { expiresIn: '30d' }
-        );
-
-        // تحديث refresh token في DB بدون الحاجة لإنشاء full Mongoose object
-        await userModel.findByIdAndUpdate(user._id, { refreshToken });
-
-        return res.status(200).json({
-            message: "SignIn success",
-            token,
-            refreshToken,
-        });
-
-    } catch (error) {
-        next(error);
+    if (!identifier || !password) {
+      return next(new AppError("Username/Email and Password are required", 400));
     }
+
+    // البحث في جدول المستخدمين أولاً
+    let user = await userModel.findOne({
+      $or: [{ email: identifier }, { username: identifier }]
+    }).select("password refreshToken role _id confirmEmail").lean();
+
+    let source = "user"; // لتحديد مصدر البحث
+
+    // إذا ما لقينا المستخدم، جرب البحث في جدول الموظفين
+    if (!user) {
+      user = await Employee.findOne({
+        $or: [{ email: identifier }, { username: identifier }]
+      }).select("password refreshToken role _id confirmEmail").lean();
+      source = "employee";
+    }
+
+    if (!user) return next(new AppError('Email/Username not found', 404));
+
+    if (!user.confirmEmail) {
+      return next(new AppError('Please confirm your email', 409));
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) return next(new AppError('Invalid password', 401));
+
+    // إنشاء access token
+    const token = jwt.sign(
+      { id: user._id, role: user.role, source },
+      process.env.LOGINTOKEN,
+      { expiresIn: '30m' }
+    );
+
+    // إنشاء refresh token جديد
+    const refreshToken = jwt.sign(
+      { id: user._id },
+      process.env.REFRESHTOKEN_SECRET,
+      { expiresIn: '30d' }
+    );
+
+    // تحديث refresh token في DB
+    const ModelToUpdate = source === "user" ? userModel : Employee;
+    await ModelToUpdate.findByIdAndUpdate(user._id, { refreshToken });
+
+    return res.status(200).json({
+      message: "SignIn success",
+      token,
+      refreshToken,
+      role: user.role,
+      source, // لمعرفة هل هو user أو employee
+    });
+
+  } catch (error) {
+    next(error);
+  }
 };
 
 // refresh token

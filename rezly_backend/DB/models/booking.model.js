@@ -52,7 +52,7 @@ createdBy:{
   },  
   recurrence: [{ type: String }],            // مثال: ["Mon", "Wed", "Fri"]
   reminders: [{ type: String }], 
-  subscriptionDuration :[{ type: String }], 
+subscriptionDuration: { type: String },
 });
 
 const Booking = mongoose.model("Booking", bookingSchema);

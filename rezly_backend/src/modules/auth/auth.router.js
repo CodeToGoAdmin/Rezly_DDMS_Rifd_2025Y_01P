@@ -45,5 +45,5 @@ router.put('/forgotpassword',validation(schema.forgotPasswordSchema),asyncHandle
 
 router.get('/confirmEmail/:token', asyncHandler(confirmEmail));
 
-
+router.patch('/toggleEmployeeStatus',auth([roles.Admin]),asyncHandler(authController.toggleEmployeeStatus))
 export default router;
