@@ -165,6 +165,29 @@ export const getAllEmployees = async (req, res) => {
     res.status(500).json({ message: "فشل في جلب بيانات الموظفين", error: error.message });
   }
 };
+export const deleteEmployee = async (req, res) => {
+  try {
+    const { id } = req.query; // نأخذ id من الكويري
+
+    if (!id) {
+      return res.status(400).json({ message: "لم يتم إرسال رقم الموظف (id)" });
+    }
+
+    const employee = await Employee.findByIdAndDelete(id);
+
+    if (!employee) {
+      return res.status(404).json({ message: "الموظف غير موجود" });
+    }
+
+    res.status(200).json({ message: "تم حذف الموظف بنجاح" });
+  } catch (error) {
+    console.error("Error deleting employee:", error);
+    res.status(500).json({
+      message: "حدث خطأ أثناء حذف الموظف",
+      error: error.message,
+    });
+  }
+};
 
 export const toggleEmployeeStatus = async (req, res) => {
   try {

@@ -15,7 +15,8 @@ router.post('/SignIn',validation(schema.SignInSchema),asyncHandler(authControlle
 
 router.get('/getAllEmployees',auth([roles.Admin]),
 asyncHandler(authController.getAllEmployees));
-
+router.delete('/deleteEmployee',auth([roles.Admin]),
+asyncHandler(authController.deleteEmployee));
 
 const upload = multer({
   storage,
