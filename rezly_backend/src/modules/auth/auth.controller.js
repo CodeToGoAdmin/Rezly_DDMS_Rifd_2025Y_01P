@@ -138,13 +138,13 @@ if (req.file) {
   }
 };
 
-
-export const getAllEmployees = async (req,res) => {
+export const getAllEmployees = async (req, res) => {
   try {
     const { role } = req.query;
 
-    // بناء شرط البحث
-    const query = role ? { role } : {};
+    // بناء شرط البحث ليشمل فقط الموظفين الفعّالين
+    const query = { active: true };
+    if (role) query.role = role;
 
     const employees = await Employee.find(query, {
       firstName: 1,
@@ -152,7 +152,9 @@ export const getAllEmployees = async (req,res) => {
       phoneNumber: 1,
       email: 1,
       department: 1,
-      jobTitle: 1
+      jobTitle: 1,
+      role:1,
+   
     });
 
     const totalCount = employees.length;
@@ -163,6 +165,7 @@ export const getAllEmployees = async (req,res) => {
     res.status(500).json({ message: "فشل في جلب بيانات الموظفين", error: error.message });
   }
 };
+
 export const toggleEmployeeStatus = async (req, res) => {
   try {
     const { id, active } = req.query; // الاثنين من الكويري
