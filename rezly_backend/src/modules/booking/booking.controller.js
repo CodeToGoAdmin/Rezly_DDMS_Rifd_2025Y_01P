@@ -548,14 +548,13 @@ await Promise.all(bookingsToUpdate.map(b => {
 
 
 //typescript//singlton and design principles
-
 export const deleteBooking = async (req, res, next) => {
   try {
     const { user } = req;
     const role = user.role.toLowerCase();
     const bookingId = req.params.id;
+    const { deleteGroup } = req.query; // optional query param: ?deleteGroup=true
 
-    // 🔹 التحقق من الـ ID
     if (!mongoose.Types.ObjectId.isValid(bookingId)) {
       return res.status(400).json({ status: "error", message: "Invalid booking ID" });
     }
@@ -565,48 +564,48 @@ export const deleteBooking = async (req, res, next) => {
       return res.status(404).json({ status: "error", message: "Booking not found" });
     }
 
-    if (role === "admin") {
-      // 🔹 حذف كل أعضاء الحجز أولاً ثم الحجز نفسه
-      await BookingMember.deleteMany({ booking: bookingId });
-      await Booking.findByIdAndDelete(bookingId);
-
-      return res.status(200).json({
-        status: "success",
-        message: "Booking and related members deleted successfully (by Admin)",
-      });
+    // تحقق من صلاحيات الكوتش
+    if (role === "coach" && booking.coach.toString() !== user._id.toString()) {
+      return res.status(403).json({ status: "error", message: "Not authorized to delete this booking" });
     }
 
-    if (role === "coach") {
-      if (booking.coach.toString() !== user._id.toString()) {
-        return res.status(403).json({
-          status: "error",
-          message: "You are not authorized to cancel this booking",
-        });
+    // ===== الحذف حسب groupId أو حجز واحد =====
+    let deletedCount = 0;
+    if (deleteGroup === "true" && booking.groupId) {
+      // حذف كل الحجوزات ضمن نفس الـ groupId
+      const groupBookings = await Booking.find({ groupId: booking.groupId }).select("_id").lean();
+      const groupBookingIds = groupBookings.map(b => b._id);
+
+      await BookingMember.deleteMany({ booking: { $in: groupBookingIds } });
+      const result = await Booking.deleteMany({ _id: { $in: groupBookingIds } });
+      deletedCount = result.deletedCount;
+    } else {
+      // حذف الحجز الحالي فقط
+      if (role === "admin") {
+        await BookingMember.deleteMany({ booking: booking._id });
+        await Booking.findByIdAndDelete(booking._id);
+        deletedCount = 1;
+      } else {
+        // Coach: مجرد تغيير الحالة
+        await Booking.updateOne(
+          { _id: booking._id },
+          { $set: { status: "cancelled", cancelledAt: new Date() } }
+        );
+        deletedCount = 1;
       }
-
-      // 🔹 تحديث حالة الحجز إلى cancelled بدون حذف أعضاء الحجز
-      await Booking.updateOne(
-        { _id: bookingId },
-        { $set: { status: "cancelled", cancelledAt: new Date() } }
-      );
-
-      return res.status(200).json({
-        status: "success",
-        message: "Booking has been cancelled successfully",
-      });
     }
 
-    // 🔹 المستخدم مش Admin ولا Coach
-    return res.status(403).json({
-      status: "error",
-      message: "Not authorized to delete or cancel bookings",
+    return res.status(200).json({
+      status: "success",
+      message: deletedCount > 1
+        ? `Deleted ${deletedCount} bookings from the group successfully`
+        : "Booking deleted/cancelled successfully",
     });
 
   } catch (err) {
     next(err);
   }
 };
-
 
 
 export const filterBookings = async (req, res) => {

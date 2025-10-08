@@ -155,6 +155,8 @@ export const getAllEmployees = async (req, res) => {
       department: 1,
       jobTitle: 1,
       role:1,
+       contractType:1,
+       startDate:1
    
     });
 
