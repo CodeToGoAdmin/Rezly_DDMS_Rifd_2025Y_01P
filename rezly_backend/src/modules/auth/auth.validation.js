@@ -130,3 +130,44 @@ image: Joi.any().optional().strip(),
 
 
 
+export const createMemberSchema = Joi.object({
+  userName: Joi.string().min(4).max(20).required().messages({
+    "string.empty": "اسم المستخدم مطلوب",
+    "string.min": "اسم المستخدم يجب أن يحتوي على 4 أحرف على الأقل",
+    "string.max": "اسم المستخدم يجب أن يحتوي على 20 حرف كحد أقصى",
+  }),
+  firstName: Joi.string().required().messages({
+    "string.empty": "الاسم الأول مطلوب",
+  }),
+  lastName: Joi.string().required().messages({
+    "string.empty": "الاسم الأخير مطلوب",
+  }),
+  gender: Joi.string().valid("ذكر", "أنثى").required().messages({
+    "any.only": "الرجاء اختيار جنس صحيح (ذكر أو أنثى)",
+    "string.empty": "الجنس مطلوب",
+  }),
+  idNumber: Joi.string().pattern(/^[0-9]{9}$/).required().messages({
+    "string.pattern.base": "رقم الهوية يجب أن يتكوّن من 9 أرقام فقط",
+    "string.empty": "رقم الهوية مطلوب",
+  }),
+  birthDate: Joi.date().less('now').required().messages({
+    "date.base": "تاريخ الميلاد غير صالح",
+    "date.less": "تاريخ الميلاد لا يمكن أن يكون في المستقبل",
+    "any.required": "تاريخ الميلاد مطلوب",
+  }),
+  phone: generalFeilds.phone.optional(),
+  email: generalFeilds.email,
+  password: generalFeilds.password,
+  city: Joi.string().optional().allow(""),
+  address: Joi.string().optional().allow(""),
+  image: Joi.string().uri().optional().allow(""),
+  notes: Joi.string().optional().allow(""),
+  packageId: Joi.string().required().messages({
+    "string.empty": "الاشتراك مطلوب",
+  }),
+  paymentMethod: Joi.string().valid("نقداً", "بطاقة", "أونلاين").required().messages({
+    "any.only": "طريقة الدفع غير صحيحة",
+    "string.empty": "طريقة الدفع مطلوبة",
+  }),
+  coachId: Joi.string().optional().allow(""),
+});

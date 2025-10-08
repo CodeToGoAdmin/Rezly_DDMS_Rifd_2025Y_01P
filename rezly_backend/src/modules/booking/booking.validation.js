@@ -46,7 +46,7 @@ export const createBookingSchema = Joi.object({
     .valid("pending", "confirmed", "cancelled")
     .default("pending"),
 
-  numberOfMember: Joi.number().integer().min(1).required().messages({
+  maxMembers: Joi.number().integer().min(1).required().messages({
     "number.base": "عدد الأعضاء يجب أن يكون رقمًا",
     "any.required": "عدد الأعضاء مطلوب",
   }),
@@ -123,7 +123,7 @@ export const updateBookingSchema = Joi.object({
     .valid("pending", "confirmed", "cancelled")
     .default("pending"),
 
-  numberOfMember: Joi.number().integer().min(1).required().messages({
+  maxMembers: Joi.number().integer().min(1).required().messages({
     "number.base": "عدد الأعضاء يجب أن يكون رقمًا",
     "any.required": "عدد الأعضاء مطلوب",
   }),

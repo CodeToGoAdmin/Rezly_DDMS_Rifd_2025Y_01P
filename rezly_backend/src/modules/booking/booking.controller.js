@@ -13,21 +13,18 @@ export const getBookings = async (req, res, next) => {
     let bookingsQuery;
 
     if (role === "admin") {
-      bookingsQuery = Booking.find(); // جلب كل الحقول
+      bookingsQuery = Booking.find();
     } else if (role === "coach") {
       bookingsQuery = Booking.find({ coach: userId });
     } else {
-      // member
       const memberBookings = await BookingMember.find({ member: userId })
         .select("booking")
         .lean();
-
       const bookingIds = memberBookings.map(bm => bm.booking);
       bookingsQuery = Booking.find({ _id: { $in: bookingIds } });
     }
 
     const bookings = await bookingsQuery.lean();
-
     if (bookings.length === 0) {
       return res.status(200).json({
         status: "success",
@@ -37,7 +34,7 @@ export const getBookings = async (req, res, next) => {
       });
     }
 
-    // جلب الأعضاء المرتبطين بكل حجز
+    // جلب الأعضاء لكل حجز
     const bookingIds = bookings.map(b => b._id);
     const bookingMembers = await BookingMember.find({ booking: { $in: bookingIds } })
       .select("booking member -_id")
@@ -50,10 +47,12 @@ export const getBookings = async (req, res, next) => {
       bookingMap[bid].push(bm.member);
     });
 
-    // دمج الأعضاء مع بيانات الحجز
+    // دمج البيانات
     const result = bookings.map(b => ({
       ...b,
       members: bookingMap[b._id.toString()] || [],
+      membersCount: (bookingMap[b._id.toString()] || []).length,
+      groupId: b.groupId || null
     }));
 
     return res.status(200).json({
@@ -67,6 +66,7 @@ export const getBookings = async (req, res, next) => {
     return next(new AppError(err.message, 500));
   }
 };
+
 
 
 function convertArabicTimeTo24Hour(timeStr) {
@@ -101,7 +101,7 @@ export const createBooking = async (req, res, next) => {
   timeEnd,
   recurrence = [],
   reminders = [],
-  numbersOfMembers,
+  maxMembers,
   members = [],
   subscriptionDuration
 } = req.body;
@@ -185,6 +185,8 @@ if (conflictFirstCoach) {
 if (conflictFirstRoom) {
   return res.status(400).json({ status: "error", message: "الغرفة محجوزة في نفس الوقت" });
 }
+const groupId = new mongoose.Types.ObjectId();
+
 
 const newFirstBooking = await Booking.create({
   service,
@@ -194,10 +196,12 @@ const newFirstBooking = await Booking.create({
   date: baseDate,
   timeStart,
   timeEnd,
-  numbersOfMembers,
+  maxMembers,
   recurrence,
   reminders,
-  subscriptionDuration
+  subscriptionDuration,
+  groupId 
+
 });
 createdBookings.push(newFirstBooking);
    if (members.length > 0) {
@@ -292,10 +296,12 @@ for (let w = 0; w < weeksToRepeat; w++) {
       date: newDate,
       timeStart,
       timeEnd,
-      numbersOfMembers,
+      maxMembers,
       recurrence,
       reminders,
-      subscriptionDuration
+      subscriptionDuration,
+      groupId 
+
     });
 
     createdBookings.push(newBooking);
@@ -330,7 +336,7 @@ export const updateBooking = async (req, res, next) => {
       timeEnd,
       recurrence = [],
       reminders = [],
-      numbersOfMembers,
+      maxMembers,
       members = [],
       subscriptionDuration
     } = req.body;
@@ -435,7 +441,7 @@ export const updateBooking = async (req, res, next) => {
     existingBooking.date = date; // <-- keep as string "YYYY-MM-DD"
     existingBooking.timeStart = timeStart || existingBooking.timeStart;
     existingBooking.timeEnd = timeEnd || existingBooking.timeEnd;
-    existingBooking.numbersOfMembers = numbersOfMembers || existingBooking.numbersOfMembers;
+    existingBooking.maxMembers = maxMembers || existingBooking.maxMembers;
     existingBooking.recurrence = recurrence.length ? recurrence : existingBooking.recurrence;
     existingBooking.reminders = reminders.length ? reminders : existingBooking.reminders;
     existingBooking.subscriptionDuration = subscriptionDuration || existingBooking.subscriptionDuration;
@@ -515,7 +521,7 @@ export const updateBooking = async (req, res, next) => {
             date: newDateStr,
             timeStart,
             timeEnd,
-            numbersOfMembers,
+            maxMembers,
             recurrence,
             reminders,
             subscriptionDuration

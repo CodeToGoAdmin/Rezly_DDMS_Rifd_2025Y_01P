@@ -3,7 +3,7 @@ import connectDB from "../DB/connection.js";
 import cors from 'cors';
 import authRouter from "./modules/auth/auth.router.js"
 import bookingRouter from "./modules/booking/booking.router.js"
-//import packageRouter from './modules/package/package.router.js';
+import packageRouter from './modules/package/package.router.js';
 import formRouter from './modules/forms/forms.routers.js';
 
 import express from 'express';
@@ -22,7 +22,7 @@ console.log("njkfdnkjf");
   
   app.use('/auth', authRouter);
   app.use('/booking', bookingRouter);
-  //app.use('/package', packageRouter);
+ app.use('/package', packageRouter);
     app.use('/forms', formRouter);
 
 app.use((err, req, res, next) => {

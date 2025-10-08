@@ -83,7 +83,6 @@ export const listPackages = async (req, res) => {
         pricing 
       });
     }
-
     res.status(200).json({
       message: "success",
       count: packages.length,

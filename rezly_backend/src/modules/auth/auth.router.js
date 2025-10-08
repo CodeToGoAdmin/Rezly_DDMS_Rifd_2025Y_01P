@@ -17,6 +17,8 @@ router.get('/getAllEmployees',auth([roles.Admin]),
 asyncHandler(authController.getAllEmployees));
 router.delete('/deleteEmployee',auth([roles.Admin]),
 asyncHandler(authController.deleteEmployee));
+router.post("/addNewMember", auth([ roles.Admin]), validation(schema.createMemberSchema), asyncHandler(authController.createMember));
+
 
 const upload = multer({
   storage,

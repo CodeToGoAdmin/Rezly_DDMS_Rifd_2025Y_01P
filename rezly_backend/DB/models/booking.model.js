@@ -46,13 +46,18 @@ createdBy:{
     type: Date,
     default: Date.now,
   },
-  numbersOfMembers:{
+  maxMembers:{
     type:Number,
     default:1
   },  
   recurrence: [{ type: String }],            // مثال: ["Mon", "Wed", "Fri"]
   reminders: [{ type: String }], 
 subscriptionDuration: { type: String },
+groupId: {
+  type: String,
+  index: true, // لتحسين البحث
+},
+
 });
 
 const Booking = mongoose.model("Booking", bookingSchema);

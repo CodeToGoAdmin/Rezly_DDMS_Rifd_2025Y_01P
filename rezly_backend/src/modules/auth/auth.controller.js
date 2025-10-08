@@ -8,6 +8,7 @@ import { arabicSlugify } from "../../Utils/ArabicSlug.js";
 import mongoose from 'mongoose';
 import { employeeSchema } from "./auth.validation.js";
 import { Employee } from "../../../DB/models/employee.model.js";
+import Package  from "../../../DB/models/packages.model.js";
 
 import crypto from "crypto";
 
@@ -167,19 +168,29 @@ export const getAllEmployees = async (req, res) => {
 };
 export const deleteEmployee = async (req, res) => {
   try {
-    const { id } = req.query; // نأخذ id من الكويري
+    let { id } = req.query; // ممكن تكون id واحدة أو مصفوفة من ids
 
     if (!id) {
       return res.status(400).json({ message: "لم يتم إرسال رقم الموظف (id)" });
     }
 
-    const employee = await Employee.findByIdAndDelete(id);
-
-    if (!employee) {
-      return res.status(404).json({ message: "الموظف غير موجود" });
+    // إذا أرسل id كـ string نحولها لمصفوفة عشان نوحد المعالجة
+    if (!Array.isArray(id)) {
+      id = [id];
     }
 
-    res.status(200).json({ message: "تم حذف الموظف بنجاح" });
+    const result = await Employee.deleteMany({ _id: { $in: id } });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: "لم يتم العثور على أي موظف للحذف" });
+    }
+
+    res.status(200).json({
+      message:
+        result.deletedCount === 1
+          ? "تم حذف الموظف بنجاح"
+          : `تم حذف ${result.deletedCount} موظفين بنجاح`,
+    });
   } catch (error) {
     console.error("Error deleting employee:", error);
     res.status(500).json({
@@ -188,6 +199,143 @@ export const deleteEmployee = async (req, res) => {
     });
   }
 };
+
+
+///////////////////////////////Add new member///////////////////////////////////////////////////
+
+
+export const createMember = async (req, res, next) => {
+  try {
+    const {
+      userName,
+      firstName,
+      lastName,
+      gender,
+      idNumber,
+      birthDate,
+      phone,
+      email,
+      password,
+      city,
+      address,
+      image,
+      packageId,
+      paymentMethod,
+      coachId,
+    } = req.body;
+
+    // التأكد من عدم وجود المستخدم مسبقًا
+    const existingUser = await userModel
+      .findOne({ $or: [{ email }, { userName }, { idNumber }] })
+      .lean();
+
+    if (existingUser) {
+      return next(
+        new AppError(
+          "المستخدم موجود مسبقًا بنفس البريد أو اسم المستخدم أو رقم الهوية",
+          409
+        )
+      );
+    }
+
+    // التأكد من وجود الباقة
+    const selectedPackage = await Package.findById(packageId);
+    if (!selectedPackage) {
+      return next(new AppError("الاشتراك المحدد غير موجود", 404));
+    }
+
+    // تشفير كلمة المرور
+    const hashedPassword = await bcrypt.hash(
+      password,
+      parseInt(process.env.SALTROUND)
+    );
+
+    // إنشاء refresh token
+    const refreshToken = jwt.sign(
+      { id: new mongoose.Types.ObjectId() },
+      process.env.REFRESHTOKEN_SECRET,
+      { expiresIn: "30d" }
+    );
+
+    // حساب تاريخ انتهاء الاشتراك
+    let endDate = new Date();
+    const unit = selectedPackage.duration_unit.toLowerCase();
+    switch (unit) {
+      case "days":
+        endDate.setDate(endDate.getDate() + selectedPackage.duration_value);
+        break;
+      case "weeks":
+        endDate.setDate(
+          endDate.getDate() + selectedPackage.duration_value * 7
+        );
+        break;
+      case "months":
+        endDate.setMonth(
+          endDate.getMonth() + selectedPackage.duration_value
+        );
+        break;
+      case "years":
+        endDate.setFullYear(
+          endDate.getFullYear() + selectedPackage.duration_value
+        );
+        break;
+    }
+
+    // إنشاء العضو
+    const member = await userModel.create({
+      userName,
+      firstName,
+      lastName,
+      gender,
+      idNumber,
+      birthDate,
+      phone,
+      email,
+      password: hashedPassword,
+      address: `${city || ""} - ${address || ""}`,
+      image,
+      role: "Member",
+      paymentStatus: "مدفوع",
+      subscriptionStatus: "Active",
+      responsibleEmployee: req.user?._id, // الأدمن الذي أضاف العضو
+      startDate: new Date(),
+      endDate,
+      slug: arabicSlugify(`${firstName}-${lastName}-${userName}`),
+      refreshToken,
+    });
+
+    // إنشاء توكن تأكيد البريد
+    const confirmToken = jwt.sign(
+      { email },
+      process.env.CONFIRMEMAILTOKEN,
+      { expiresIn: "1h" }
+    );
+
+    await sendEmail(email, "تأكيد الحساب في النظام", userName, confirmToken);
+
+    // ربط العضو بالمدرب (إن وجد)
+    if (coachId) {
+      await userModel.findByIdAndUpdate(coachId, {
+        $push: { members: member._id },
+      });
+    }
+
+    // الرد النهائي
+    return res.status(201).json({
+      message: "تم إنشاء المشترك بنجاح",
+      member,
+      package: {
+        name: selectedPackage.name,
+        price: selectedPackage.price_cents / 100,
+        duration: `${selectedPackage.duration_value} ${selectedPackage.duration_unit}`,
+        paymentMethod,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 export const toggleEmployeeStatus = async (req, res) => {
   try {
