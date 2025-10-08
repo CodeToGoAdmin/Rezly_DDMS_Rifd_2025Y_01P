@@ -346,6 +346,7 @@ export const updateBooking = async (req, res, next) => {
     if (!existingBooking) {
       return res.status(404).json({ status: "error", message: "Booking not found" });
     }
+const bookingsToUpdate = await Booking.find({ groupId: existingBooking.groupId });
 
     // صلاحية المستخدم
     let finalCoachId = coachId || existingBooking.coach;
@@ -434,30 +435,31 @@ export const updateBooking = async (req, res, next) => {
     if (conflictRoom) return res.status(400).json({ status: "error", message: "الغرفة محجوزة في نفس الوقت" });
 
     // ===== تحديث الحجز الرئيسي =====
-    existingBooking.service = service || existingBooking.service;
-    existingBooking.description = description || existingBooking.description;
-    existingBooking.coach = finalCoachId;
-    existingBooking.location = location || existingBooking.location;
-    existingBooking.date = date; // <-- keep as string "YYYY-MM-DD"
-    existingBooking.timeStart = timeStart || existingBooking.timeStart;
-    existingBooking.timeEnd = timeEnd || existingBooking.timeEnd;
-    existingBooking.maxMembers = maxMembers || existingBooking.maxMembers;
-    existingBooking.recurrence = recurrence.length ? recurrence : existingBooking.recurrence;
-    existingBooking.reminders = reminders.length ? reminders : existingBooking.reminders;
-    existingBooking.subscriptionDuration = subscriptionDuration || existingBooking.subscriptionDuration;
+await Promise.all(bookingsToUpdate.map(b => {
+  b.service = service || b.service;
+  b.description = description || b.description;
+  b.coach = finalCoachId || b.coach;
+  b.location = location || b.location;
+  b.date = date || b.date;
+  b.timeStart = timeStart || b.timeStart;
+  b.timeEnd = timeEnd || b.timeEnd;
+  b.maxMembers = maxMembers || b.maxMembers;
+  b.recurrence = recurrence.length ? recurrence : b.recurrence;
+  b.reminders = reminders.length ? reminders : b.reminders;
+  b.subscriptionDuration = subscriptionDuration || b.subscriptionDuration;
+  return b.save();
+}));
 
-    await existingBooking.save();
 
     // ===== تحديث الأعضاء =====
-    if (Array.isArray(members) && members.length > 0) {
-      await BookingMember.deleteMany({ booking: existingBooking._id });
-      const bookingMembers = members.map(memberId => ({
-        booking: existingBooking._id,
-        member: memberId,
-        joinedAt: new Date()
-      }));
-      await BookingMember.insertMany(bookingMembers);
-    }
+ if (Array.isArray(members) && members.length > 0) {
+  await BookingMember.deleteMany({ booking: { $in: bookingsToUpdate.map(b => b._id) } });
+  const bookingMembers = bookingsToUpdate.flatMap(b =>
+    members.map(memberId => ({ booking: b._id, member: memberId, joinedAt: new Date() }))
+  );
+  await BookingMember.insertMany(bookingMembers);
+}
+
 
     // ===== التعامل مع recurrence بنفس الطريقة مع تخزين التاريخ كسلسلة =====
     let createdBookings = [existingBooking];
