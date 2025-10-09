@@ -92,6 +92,7 @@ if (req.file) {
       notes,
       confirmEmail: false,
       refreshToken,
+      active:true
     });
 
     await newEmployee.save();
@@ -138,15 +139,21 @@ if (req.file) {
     });
   }
 };
-
 export const getAllEmployees = async (req, res) => {
   try {
-    const { role } = req.query;
+    const { id, role } = req.query;
 
-    // بناء شرط البحث ليشمل فقط الموظفين الفعّالين
+    // شرط البحث الأساسي
     const query = { active: true };
-    if (role) query.role = role;
 
+    if (id) {
+      query._id = id; // لو حددنا ID نرجع الموظف المحدد فقط
+    }
+
+    if (role) {
+      query.role = role; // فلترة حسب الدور
+    }
+console.log(query);
     const employees = await Employee.find(query, {
       firstName: 1,
       lastName: 1,
@@ -154,10 +161,9 @@ export const getAllEmployees = async (req, res) => {
       email: 1,
       department: 1,
       jobTitle: 1,
-      role:1,
-       contractType:1,
-       startDate:1
-   
+      role: 1,
+      contractType: 1,
+      startDate: 1
     });
 
     const totalCount = employees.length;
@@ -168,6 +174,7 @@ export const getAllEmployees = async (req, res) => {
     res.status(500).json({ message: "فشل في جلب بيانات الموظفين", error: error.message });
   }
 };
+
 export const deleteEmployee = async (req, res) => {
   try {
     let { id } = req.query; // ممكن تكون id واحدة أو مصفوفة من ids
@@ -199,6 +206,72 @@ export const deleteEmployee = async (req, res) => {
       message: "حدث خطأ أثناء حذف الموظف",
       error: error.message,
     });
+  }
+};
+export const updateEmployee = async (req, res) => {
+  try {
+    const  employeeId  = req.params.id;
+console.log( employeeId);
+    // التحقق من وجود الموظف
+    const existingEmployee = await Employee.findById(employeeId);
+    if (!existingEmployee)
+      return res.status(404).json({ message: "Employee not found" });
+
+    // التحقق من صحة البيانات باستخدام نفس الـ schema
+    const { error } = employeeSchema.validate(req.body, { abortEarly: false });
+    if (error) {
+      return res.status(400).json({
+        errors: error.details.map((e) => e.message),
+      });
+    }
+
+    const updateData = { ...req.body };
+
+    // إذا تم إرسال كلمة مرور جديدة
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 10);
+    }
+
+    // إذا تم إرسال صورة جديدة
+    if (req.file) {
+      const key = Buffer.from(process.env.IMAGE_ENCRYPTION_KEY, "hex"); 
+      const iv = crypto.randomBytes(16);
+      const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+      let encrypted = cipher.update(req.file.buffer);
+      encrypted = Buffer.concat([encrypted, cipher.final()]);
+      updateData.image = {
+        data: encrypted.toString("base64"),
+        iv: iv.toString("hex"),
+        mimetype: req.file.mimetype,
+      };
+    }
+
+    // تحديث الموظف
+    const updatedEmployee = await Employee.findByIdAndUpdate(
+      employeeId,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({ message: "Employee updated successfully", data: updatedEmployee });
+
+  } catch (error) {
+    console.error(error);
+
+    // معالجة أخطاء التكرار
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      let message = "";
+      switch (field) {
+        case "username": message = "Username already exists"; break;
+        case "email": message = "Email already exists"; break;
+        case "nationalId": message = "National ID already exists"; break;
+        default: message = "Duplicate value in one of the fields";
+      }
+      return res.status(400).json({ errors: [message] });
+    }
+
+    res.status(500).json({ message: "Error updating employee", error: error.message });
   }
 };
 
