@@ -552,60 +552,75 @@ export const deleteBooking = async (req, res, next) => {
   try {
     const { user } = req;
     const role = user.role.toLowerCase();
-    const bookingId = req.params.id;
-    const { deleteGroup } = req.query; // optional query param: ?deleteGroup=true
+    const { id } = req.params; // ممكن يكون bookingId أو groupId
+    const { type } = req.query; // type=group أو type=single
 
-    if (!mongoose.Types.ObjectId.isValid(bookingId)) {
-      return res.status(400).json({ status: "error", message: "Invalid booking ID" });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ status: "error", message: "Invalid ID" });
     }
 
-    const booking = await Booking.findById(bookingId).lean();
-    if (!booking) {
-      return res.status(404).json({ status: "error", message: "Booking not found" });
-    }
-
-    // تحقق من صلاحيات الكوتش
-    if (role === "coach" && booking.coach.toString() !== user._id.toString()) {
-      return res.status(403).json({ status: "error", message: "Not authorized to delete this booking" });
-    }
-
-    // ===== الحذف حسب groupId أو حجز واحد =====
     let deletedCount = 0;
-    if (deleteGroup === "true" && booking.groupId) {
-      // حذف كل الحجوزات ضمن نفس الـ groupId
-      const groupBookings = await Booking.find({ groupId: booking.groupId }).select("_id").lean();
+
+    // ====== حذف مجموعة كاملة ======
+    if (type === "group") {
+      const groupBookings = await Booking.find({ groupId: id }).lean();
+      if (!groupBookings.length) {
+        return res.status(404).json({ status: "error", message: "No bookings found for this groupId" });
+      }
+
+      // تحقق من صلاحية الكوتش
+      if (role === "coach") {
+        const isOwner = groupBookings.every(b => b.coach.toString() === user._id.toString());
+        if (!isOwner) {
+          return res.status(403).json({ status: "error", message: "Not authorized to delete this group" });
+        }
+      }
+
       const groupBookingIds = groupBookings.map(b => b._id);
 
+      // حذف جميع الميمبرز المرتبطين بالجروب
       await BookingMember.deleteMany({ booking: { $in: groupBookingIds } });
+
+      // حذف جميع الحجوزات
       const result = await Booking.deleteMany({ _id: { $in: groupBookingIds } });
       deletedCount = result.deletedCount;
-    } else {
-      // حذف الحجز الحالي فقط
-      if (role === "admin") {
-        await BookingMember.deleteMany({ booking: booking._id });
-        await Booking.findByIdAndDelete(booking._id);
-        deletedCount = 1;
-      } else {
-        // Coach: مجرد تغيير الحالة
-        await Booking.updateOne(
-          { _id: booking._id },
-          { $set: { status: "cancelled", cancelledAt: new Date() } }
-        );
-        deletedCount = 1;
-      }
+
+      return res.status(200).json({
+        status: "success",
+        message: `Deleted ${deletedCount} bookings and all related members from the group successfully`,
+      });
     }
 
-    return res.status(200).json({
-      status: "success",
-      message: deletedCount > 1
-        ? `Deleted ${deletedCount} bookings from the group successfully`
-        : "Booking deleted/cancelled successfully",
-    });
+    // ====== حذف حجز واحد ======
+    else {
+      const booking = await Booking.findById(id).lean();
+      if (!booking) {
+        return res.status(404).json({ status: "error", message: "Booking not found" });
+      }
+
+      // تحقق من صلاحيات الكوتش
+      if (role === "coach" && booking.coach.toString() !== user._id.toString()) {
+        return res.status(403).json({ status: "error", message: "Not authorized to delete this booking" });
+      }
+
+      // حذف جميع الميمبرز المرتبطين بهذا الحجز
+      await BookingMember.deleteMany({ booking: booking._id });
+
+      // حذف الحجز نفسه
+      await Booking.findByIdAndDelete(booking._id);
+      deletedCount = 1;
+
+      return res.status(200).json({
+        status: "success",
+        message: "Booking and all related members deleted successfully",
+      });
+    }
 
   } catch (err) {
     next(err);
   }
 };
+
 
 
 export const filterBookings = async (req, res) => {
