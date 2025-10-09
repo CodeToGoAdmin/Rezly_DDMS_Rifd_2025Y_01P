@@ -336,30 +336,33 @@ export const updateBooking = async (req, res, next) => {
 
     // ===== تحديد الحجوزات =====
     let bookingsToUpdate = [];
-    let existingBooking = null;
+    let existingBooking = null;if (updateGroup === "true") {
+  // كل الحجوزات بنفس groupId
+  bookingsToUpdate = await Booking.find({ groupId: bookingIdOrGroupId });
+  if (!bookingsToUpdate.length)
+    return res.status(404).json({ status: "error", message: "No bookings found for this group" });
+} else {
+  existingBooking = await Booking.findById(bookingIdOrGroupId);
+  if (!existingBooking)
+    return res.status(404).json({ status: "error", message: "Booking not found" });
 
-    if (updateGroup === "true") {
-      // كل الحجوزات بنفس groupId
-      bookingsToUpdate = await Booking.find({ groupId: bookingIdOrGroupId });
-      if (!bookingsToUpdate.length)
-        return res.status(404).json({ status: "error", message: "No bookings found for this group" });
-    } else {
-      // حجز فردي
-      existingBooking = await Booking.findById(bookingIdOrGroupId);
-      if (!existingBooking)
-        return res.status(404).json({ status: "error", message: "Booking not found" });
+  // الحجز الفردي
+  existingBooking.recurrence = [];
+  existingBooking.subscriptionDuration = 1;
 
-      bookingsToUpdate = [existingBooking];
+  bookingsToUpdate = [existingBooking];
 
-      // تحديث المستقبلية ضمن نفس المجموعة
-      if (updateFuture === "true" && existingBooking.groupId) {
-        const futureBookings = await Booking.find({
-          groupId: existingBooking.groupId,
-          date: { $gte: existingBooking.date }
-        });
-        bookingsToUpdate = futureBookings.length ? futureBookings : bookingsToUpdate;
-      }
-    }
+  if (!updateFuture || updateFuture !== "true") {
+    req.body.recurrence = [];
+    req.body.subscriptionDuration = 1; // يوم واحد
+  } else if (existingBooking.groupId) {
+    const futureBookings = await Booking.find({
+      groupId: existingBooking.groupId,
+      date: { $gte: existingBooking.date }
+    });
+    bookingsToUpdate = futureBookings.length ? futureBookings : bookingsToUpdate;
+  }
+}
 
     const excludedIds = bookingsToUpdate.map(b => b._id);
 

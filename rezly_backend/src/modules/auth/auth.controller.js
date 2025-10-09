@@ -6,7 +6,7 @@ import { sendEmail } from "../../Utils/sendEmail.js";
 import { customAlphabet } from "nanoid";
 import { arabicSlugify } from "../../Utils/ArabicSlug.js";
 import mongoose from 'mongoose';
-import { employeeSchema } from "./auth.validation.js";
+import { employeeSchema, employeeUpdateSchema } from "./auth.validation.js";
 import { Employee } from "../../../DB/models/employee.model.js";
 import Package  from "../../../DB/models/packages.model.js";
 
@@ -210,24 +210,32 @@ export const deleteEmployee = async (req, res) => {
 };
 export const updateEmployee = async (req, res) => {
   try {
-    const  employeeId  = req.params.id;
-console.log( employeeId);
+    const employeeId = req.params.id;
+    const currentUser = req.user; // جاية من الـ middleware
+    console.log("Current user:", currentUser);
+
+    // التحقق من الصلاحية
+    if (currentUser.role !== "admin" && currentUser._id.toString() !== employeeId) {
+      return res.status(403).json({ message: "You are not authorized to update this employee" });
+    }
+
     // التحقق من وجود الموظف
     const existingEmployee = await Employee.findById(employeeId);
     if (!existingEmployee)
       return res.status(404).json({ message: "Employee not found" });
 
-    // التحقق من صحة البيانات باستخدام نفس الـ schema
-    const { error } = employeeSchema.validate(req.body, { abortEarly: false });
-    if (error) {
-      return res.status(400).json({
-        errors: error.details.map((e) => e.message),
-      });
-    }
+  // التحقق من صحة البيانات
+const { error } = employeeUpdateSchema.validate(req.body, { abortEarly: false });
+if (error) {
+  return res.status(400).json({
+    errors: error.details.map((e) => e.message),
+  });
+}
+
 
     const updateData = { ...req.body };
 
-    // إذا تم إرسال كلمة مرور جديدة
+    // تحديث كلمة المرور إن وجدت
     if (updateData.password) {
       updateData.password = await bcrypt.hash(updateData.password, 10);
     }
@@ -246,7 +254,7 @@ console.log( employeeId);
       };
     }
 
-    // تحديث الموظف
+    // تحديث بيانات الموظف
     const updatedEmployee = await Employee.findByIdAndUpdate(
       employeeId,
       { $set: updateData },

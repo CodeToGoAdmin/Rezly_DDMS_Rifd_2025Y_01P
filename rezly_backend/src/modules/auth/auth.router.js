@@ -39,6 +39,9 @@ asyncHandler(authController.getAllEmployees));
 router.put(
   "/updateEmployee/:id",
   upload.single("image"), 
+  auth([roles.Admin,roles.Accountant,roles.Coach,roles.Member,roles.Receptionist]),
+  validation(schema.employeeUpdateSchema, { allowUnknown: true }),
+
   asyncHandler(authController.updateEmployee)
 );
 

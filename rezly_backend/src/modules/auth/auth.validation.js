@@ -128,6 +128,25 @@ image: Joi.any().optional().strip(),
   notes: Joi.string().optional(),
 });
 
+export const employeeUpdateSchema = Joi.object({
+  firstName: Joi.string().optional(),
+  lastName: Joi.string().optional(),
+  birthDate: Joi.date().optional(),
+  image: Joi.any().optional().strip(),
+  nationalId: Joi.string().optional(),
+  gender: Joi.string().valid("ذكر","أنثى").optional(),
+  phoneNumber: Joi.string().pattern(/^\+?\d{7,15}$/).optional(),
+  email: Joi.string().email().optional(),
+  address: Joi.string().optional(),
+  jobTitle: Joi.string().optional(),
+  department: Joi.string().optional(),
+  contractType: Joi.string().valid("دوام كامل","دوام جزئي","عقد مؤقت").optional(),
+  startDate: Joi.date().optional(),
+  username: Joi.string().optional(),
+  password: Joi.string().min(6).optional(),
+  role: Joi.string().valid("Admin","Coach","accountant","receptionist").optional(),
+  notes: Joi.string().optional(),
+}).unknown(true); // يسمح بأي حقل إضافي مثل id بدون مشكلة
 
 
 export const createMemberSchema = Joi.object({
