@@ -218,7 +218,7 @@ export const updateEmployee = async (req, res) => {
 
     // التحقق من الصلاحية
     if (
-      currentUser.role !== "admin" &&
+      currentUser.role !== "Admin" &&
       currentUser._id.toString() !== employeeId
     ) {
       return res
