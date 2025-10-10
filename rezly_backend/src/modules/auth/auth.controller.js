@@ -1,12 +1,12 @@
 import userModel from "../../../DB/models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { Role } from "../../../DB/models/role.model.js";
 import { AppError } from "../../../AppError.js";
 import { sendEmail } from "../../Utils/sendEmail.js";
 import { customAlphabet } from "nanoid";
 import { arabicSlugify } from "../../Utils/ArabicSlug.js";
 import mongoose from "mongoose";
+import Role from "../../../DB/models/role.model.js";
 import { employeeSchema, employeeUpdateSchema } from "./auth.validation.js";
 import { Employee } from "../../../DB/models/employee.model.js";
 import Package from "../../../DB/models/packages.model.js";
@@ -312,20 +312,16 @@ export const createMember = async (req, res, next) => {
     let endDate = new Date();
     const unit = selectedPackage.duration_unit.toLowerCase();
     switch (unit) {
-      case "days":
-        endDate.setDate(endDate.getDate() + selectedPackage.duration_value);
-        break;
-      case "weeks":
-        endDate.setDate(endDate.getDate() + selectedPackage.duration_value * 7);
-        break;
-      case "months":
-        endDate.setMonth(endDate.getMonth() + selectedPackage.duration_value);
-        break;
-      case "years":
-        endDate.setFullYear(
-          endDate.getFullYear() + selectedPackage.duration_value
-        );
-        break;
+      case "days": endDate.setDate(endDate.getDate() + selectedPackage.duration_value); break;
+      case "weeks": endDate.setDate(endDate.getDate() + selectedPackage.duration_value * 7); break;
+      case "months": endDate.setMonth(endDate.getMonth() + selectedPackage.duration_value); break;
+      case "years": endDate.setFullYear(endDate.getFullYear() + selectedPackage.duration_value); break;
+    }
+
+    // التأكد من وجود دور Member
+    let memberRole = await Role.findOne({ name: "Member" });
+    if (!memberRole) {
+      memberRole = await Role.create({ name: "Member", description: "مشترك في النظام", permissions: [] });
     }
 
     // إنشاء العضو وحفظه
@@ -359,16 +355,10 @@ export const createMember = async (req, res, next) => {
       .populate({ path: "packageId", select: "name price_cents duration_value duration_unit price_type" })
       .populate({ path: "responsibleEmployee", select: "firstName lastName email" })
       .populate({ path: "coachId", select: "_id username firstName lastName email phoneNumber" })
-
       .lean();
 
     // إنشاء توكن تأكيد البريد
-    const confirmToken = jwt.sign(
-      { email },
-      process.env.CONFIRMEMAILTOKEN,
-      { expiresIn: "1h" }
-    );
-
+    const confirmToken = jwt.sign({ email }, process.env.CONFIRMEMAILTOKEN, { expiresIn: "1h" });
     await sendEmail(email, "تأكيد الحساب في النظام", userName, confirmToken);
 
     // ربط العضو بالمدرب (إن وجد)
@@ -712,3 +702,147 @@ export const forgotpassword = async (req, res, next) => {
   }
 };
 
+
+////////////////////UPDATE MEMBER ////////////////////////////////////
+/// سمحت بتعديل الايميل ورقم الهاتف مع اني مش حاسة انه منطقي 
+export const updateMember = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const {firstName,lastName,phone,email,city,address,image,password,packageId,paymentMethod,coachId,
+    } = req.body;
+
+    if (req.user.role !== "Admin") {
+      return next(new AppError("غير مصرح لك بتعديل بيانات الأعضاء", 403));
+    }
+
+    const member = await userModel.findById(id); 
+    if (!member) {
+      return next(new AppError("المشترك غير موجود", 404));
+    }
+
+    const duplicate = await userModel.findOne({
+      _id: { $ne: id }, 
+      $or: [{ email }, { phone }],
+    });
+
+    if (duplicate) {
+      return next(new AppError("البريد الإلكتروني أو رقم الهاتف مستخدم مسبقًا", 409));
+    }
+
+    if (password) {
+      member.password = await bcrypt.hash(password, parseInt(process.env.SALTROUND));
+    }
+
+    // تعديل الحقول المسموح بها فقط
+    if (firstName) member.firstName = firstName;
+    if (lastName) member.lastName = lastName;
+    if (phone) member.phone = phone;
+    if (email) member.email = email;
+    if (city || address)
+      member.address = `${city || ""} - ${address || ""}`.trim();
+    if (image) member.image = image;
+    member.slug = arabicSlugify(`${member.firstName}-${member.lastName}-${member.userName}`);
+
+    if (packageId) {
+      const selectedPackage = await Package.findById(packageId);
+      if (!selectedPackage)
+        return next(new AppError("الباقة المحددة غير موجودة", 404));
+
+      member.packageId = selectedPackage._id;
+      member.paymentMethod = paymentMethod || member.paymentMethod;
+      member.paymentStatus = "مدفوع";
+      member.subscriptionStatus = "Active";
+      member.startDate = new Date();
+
+      let endDate = new Date();
+      const unit = selectedPackage.duration_unit.toLowerCase();
+      switch (unit) {
+        case "days":
+          endDate.setDate(endDate.getDate() + selectedPackage.duration_value);
+          break;
+        case "weeks":
+          endDate.setDate(endDate.getDate() + selectedPackage.duration_value * 7);
+          break;
+        case "months":
+          endDate.setMonth(endDate.getMonth() + selectedPackage.duration_value);
+          break;
+        case "years":
+          endDate.setFullYear(endDate.getFullYear() + selectedPackage.duration_value);
+          break;
+      }
+      member.endDate = endDate;
+    }
+
+    if (coachId && coachId.toString() !== member.coachId?.toString()) {
+      if (member.coachId) {
+        await userModel.findByIdAndUpdate(member.coachId, {
+          $pull: { members: member._id },
+        });
+      }
+      await userModel.findByIdAndUpdate(coachId, {
+        $push: { members: member._id },
+      });
+      member.coachId = coachId;
+    }
+
+    await member.save();
+
+    return res.status(200).json({
+      message: "تم تعديل بيانات المشترك بنجاح",
+      member,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllMembers = async (req, res, next) => {
+  try {
+    if (req.user?.role !== "Admin") {
+      return next(new AppError("غير مصرح لك بعرض جميع الأعضاء", 403));
+    }
+
+    // فلترة
+    const { search, packageId, page = 1, limit = 10 } = req.query;
+    const filter = {};
+
+    if (search) {
+      filter.$or = [
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { userName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { phone: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (packageId) {
+      filter.packageId = packageId;
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const members = await userModel.find(filter)
+      .populate({ path: "roleId", select: "name description" })
+      .populate({ path: "packageId", select: "name price_cents duration_value duration_unit price_type" })
+      .populate({ path: "responsibleEmployee", select: "firstName lastName email" })
+      .populate({ path: "coachId", select: "_id username firstName lastName email phoneNumber" })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .lean();
+
+    const total = await userModel.countDocuments(filter);
+    const totalPages = Math.ceil(total / limit);
+
+    res.status(200).json({
+      message: "success",
+      page: parseInt(page),
+      totalPages,
+      totalMembers: total,
+      members,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

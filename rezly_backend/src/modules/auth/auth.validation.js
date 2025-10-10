@@ -148,6 +148,8 @@ export const employeeUpdateSchema = Joi.object({
   notes: Joi.string().optional(),
 }).unknown(true); // يسمح بأي حقل إضافي مثل id بدون مشكلة
 
+
+
 export const createMemberSchema = Joi.object({
   userName: Joi.string().min(4).max(20).required().messages({
     "string.empty": "اسم المستخدم مطلوب",
@@ -183,6 +185,13 @@ export const createMemberSchema = Joi.object({
   address: Joi.string().optional().allow(""),
   image: Joi.string().uri().optional().allow(""),
   notes: Joi.string().optional().allow(""),
+  startDate: Joi.date()
+    .min("now")
+    .optional()
+    .messages({
+      "date.base": "تاريخ البدء غير صالح",
+      "date.min": "تاريخ البدء يجب أن يكون اليوم أو مستقبلًا",
+    }),
   packageId: Joi.string().required().messages({
     "string.empty": "الاشتراك مطلوب",
   }),
@@ -192,3 +201,36 @@ export const createMemberSchema = Joi.object({
   }),
   coachId: Joi.string().optional().allow(""),
 });
+
+export const updateMemberSchema = Joi.object({
+  firstName: Joi.string().optional().messages({
+    "string.empty": "الاسم الأول مطلوب",
+  }),
+  lastName: Joi.string().optional().messages({
+    "string.empty": "الاسم الأخير مطلوب",
+  }),
+  phone: generalFeilds.phone.optional(),
+  email: generalFeilds.email.optional(),
+  password: generalFeilds.password.optional(),
+  city: Joi.string().optional().allow(""),
+  address: Joi.string().optional().allow(""),
+  image: Joi.string().uri().optional().allow(""),
+  notes: Joi.string().optional().allow(""),
+  packageId: Joi.string().optional().messages({
+    "string.empty": "الاشتراك مطلوب",
+  }),
+  paymentMethod: Joi.string()
+    .valid("نقداً", "بطاقة", "أونلاين")
+    .optional()
+    .messages({
+      "any.only": "طريقة الدفع غير صحيحة",
+    }),
+  coachId: Joi.string().optional().allow(""),
+  startDate: Joi.date()
+    .min("now")
+    .optional()
+    .messages({
+      "date.base": "تاريخ البدء غير صالح",
+      "date.min": "تاريخ البدء يجب أن يكون اليوم أو مستقبلًا",
+    }),
+}).unknown(true);
