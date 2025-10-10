@@ -72,7 +72,7 @@ const userSchema = new Schema(
 
     contractType: {
       type: String,
-      enum: ["دوام جزئي", "دوام كلي"],
+      enum: ["جزئي", "كلي"],
     },
 
     startDate: {
