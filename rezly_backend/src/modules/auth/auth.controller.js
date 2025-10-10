@@ -95,10 +95,10 @@ export const employeeSignUp = async (req, res) => {
 
     await newEmployee.save();
 
-    const confirmLink = `https://rezly-ddms-rifd-2025y-01p.onrender.com/auth/confirmEmail/${token}`;
-    console.log("Confirm link:", confirmLink); // لا يزال للـ testing
+    // const confirmLink = `https://rezly-ddms-rifd-2025y-01p.onrender.com/auth/confirmEmail/${token}`;
+    // console.log("Confirm link:", confirmLink); // لا يزال للـ testing
 
-    await sendEmail(email, `confirm email from Booking`, username, token);
+    // await sendEmail(email, `confirm email from Booking`, username, token);
 
     console.log("User created with refresh token:", newEmployee.refreshToken);
 
