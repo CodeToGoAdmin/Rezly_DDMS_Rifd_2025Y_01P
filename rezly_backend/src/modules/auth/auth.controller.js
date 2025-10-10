@@ -149,6 +149,50 @@ export const getAllEmployees = async (req, res) => {
       .json({ message: "فشل في جلب بيانات الموظفين", error: error.message });
   }
 };
+export const updateRole = async (req, res) => {
+  try {
+    const { id,role } = req.params; // ID الموظف اللي بدنا نغير دوره
+
+  
+    const validRoles = ["Admin", "Coach", "Accountant", "Receptionist", "Member"];
+    if (!role || !validRoles.includes(role)) {
+      return res.status(400).json({
+        status: "error",
+        message: `Invalid role. Allowed roles: ${validRoles.join(", ")}`,
+      });
+    }
+
+    const employee = await Employee.findById(id);
+    if (!employee) {
+      return res.status(404).json({
+        status: "error",
+        message: "Employee not found",
+      });
+    }
+
+    // تحديث الرول
+    employee.role = role;
+    await employee.save();
+
+    return res.status(200).json({
+      status: "success",
+      message: `Role updated successfully to ${role}`,
+      data: {
+        id: employee._id,
+        name: `${employee.firstName} ${employee.lastName}`,
+        newRole: employee.role,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating role:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
 
 export const deleteEmployee = async (req, res) => {
   try {

@@ -46,6 +46,11 @@ router.put(
 
   asyncHandler(authController.updateEmployee)
 );
+router.patch(
+  "/updateRole/:id/:role",
+  auth([roles.Admin]), // فقط الأدمن
+  asyncHandler(authController.updateRole)
+);
 
 router.delete('/deleteEmployee',auth([roles.Admin]),
 asyncHandler(authController.deleteEmployee));
