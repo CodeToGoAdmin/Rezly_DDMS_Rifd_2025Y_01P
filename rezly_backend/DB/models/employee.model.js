@@ -16,7 +16,7 @@ const employeeSchema = new mongoose.Schema({
   address: { type: String, required: true },           
   jobTitle: { type: String, required: true },          
   department: { type: String, required: true },       
-  contractType: { type: String, enum: [" كامل", "جزئي", "مؤقت"], required: true }, // نوع العقد
+  contractType: { type: String, enum: ["كامل","جزئي","مؤقت"], required: true }, // نوع العقد
   startDate: { type: Date, required: true },           
   username: { type: String, required: true, unique: true }, 
   password: { type: String, required: true },           
