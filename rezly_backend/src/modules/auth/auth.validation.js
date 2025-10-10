@@ -101,7 +101,7 @@ export const employeeSchema = Joi.object({
     "any.required": "القسم مطلوب",
   }),
   contractType: Joi.string()
-    .valid("دوام كامل", "دوام جزئي", "عقد مؤقت")
+    .valid("كامل", "جزئي","مؤقت")
     .required()
     .messages({
       "any.only": "اختر نوع عقد صالح",
