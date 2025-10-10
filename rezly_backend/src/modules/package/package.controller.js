@@ -1,35 +1,51 @@
 import Package from "../../../DB/models/packages.model.js";
 import { arabicSlugify } from "../../Utils/ArabicSlug.js";
 import { applyOffers } from "../../serveces/applyOffer.js";
+import Offer from "../../../DB/models/offer.model.js";
 
 // ==================== CREATE PACKAGE ====================
 export const createPackage = async (req, res) => {
   try {
-    if (req.user.role !== "Admin") {
-      return res.status(403).json({ message: "Only admins can create packages" });
-    }
-    
     const {
-      name, description, price_cents, currency, price_type,
-      duration_value, duration_unit, auto_renew, trial_days, active,
-      startDate, endDate
+      name,description,price_cents,currency,price_type,duration_value,
+      duration_unit,auto_renew,trial_days,active,startDate,
     } = req.body;
 
-   
-    const now = new Date();
-    if ((startDate && new Date(startDate) < now) || (endDate && new Date(endDate) < now)) {
-      return res.status(400).json({ message: "Start and end dates must be in the future" });
+    // حساب endDate تلقائي حسب duration
+    let endDate = null;
+    if (duration_value && duration_unit) {
+      const start = new Date(startDate);
+      endDate = new Date(start);
+
+      switch (duration_unit) {
+        case "Days":
+          endDate.setDate(start.getDate() + duration_value);
+          break;
+        case "Weeks":
+          endDate.setDate(start.getDate() + duration_value * 7);
+          break;
+        case "Months":
+          endDate.setMonth(start.getMonth() + duration_value);
+          break;
+        case "Years":
+          endDate.setFullYear(start.getFullYear() + duration_value);
+          break;
+        default:
+          return res.status(400).json({ message: "Invalid duration unit" });
+      }
     }
 
+    // التحقق من عدم وجود باقة مطابقة تمامًا
     const existingPackage = await Package.findOne({
-      name, description, price_cents, currency, price_type,
-      duration_value, duration_unit, auto_renew, trial_days, active
+      name,description,price_cents,currency,price_type,duration_value,duration_unit,
+      auto_renew,trial_days,active,
     });
 
     if (existingPackage) {
       return res.status(400).json({ message: "Package with identical data already exists" });
     }
 
+    // إنشاء الباقة الجديدة
     const newPackage = new Package({
       name,
       slug: arabicSlugify(name),
@@ -43,15 +59,20 @@ export const createPackage = async (req, res) => {
       trial_days,
       active,
       startDate,
-      endDate
+      endDate,
     });
 
     await newPackage.save();
-    res.status(201).json({ message: "success", package: newPackage });
+
+    res.status(201).json({
+      message: "Package created successfully",
+      package: newPackage,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 // ==================== LIST PACKAGES WITH OFFERS ====================
 export const listPackages = async (req, res) => {
   try {
@@ -116,10 +137,6 @@ export const getPackageById = async (req, res) => {
 // ==================== UPDATE PACKAGE ====================
 export const updatePackage = async (req, res) => {
   try {
-    if (!req.user || req.user.role !== "Admin") {
-      return res.status(403).json({ message: "Only admins can update packages" });
-    }
-
     const { id } = req.params;
     const updateData = { ...req.body };
 
@@ -154,10 +171,6 @@ export const updatePackage = async (req, res) => {
 // ==================== DISABLE PACKAGE ====================
 export const disablePackage = async (req, res) => {
   try {
-    if (!req.user || req.user.role !== "Admin") {
-      return res.status(403).json({ message: "Only admins can disable packages" });
-    }
-
     const { id } = req.params;
     const pkg = await Package.findById(id);
     if (!pkg) return res.status(404).json({ message: "Package not found" });
@@ -176,10 +189,6 @@ export const disablePackage = async (req, res) => {
 // ==================== ENABLE PACKAGE ====================
 export const enablePackage = async (req, res) => {
   try {
-    if (!req.user || req.user.role !== "Admin") {
-      return res.status(403).json({ message: "Only admins can enable packages" });
-    }
-
     const { id } = req.params;
     const pkg = await Package.findById(id);
     if (!pkg) return res.status(404).json({ message: "Package not found" });

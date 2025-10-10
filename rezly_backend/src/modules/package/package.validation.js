@@ -27,8 +27,13 @@ export const createPackageSchema = Joi.object({
     'any.required': 'Duration value is required',
   }),
   duration_unit: Joi.string().valid('Days', 'Weeks', 'Months', 'Years').required().messages({
-    'any.only': 'Duration unit must be one of Days, Weeks, Months, or Years',
-    'any.required': 'Duration unit is required',
+  'any.only': 'Duration unit must be one of Days, Weeks, Months, or Years',
+  'any.required': 'Duration unit is required',
+}),
+ startDate: Joi.date().greater('now').required().messages({
+    'date.base': 'Start date must be a valid date',
+    'date.greater': 'Start date must be in the future',
+    'any.required': 'Start date is required',
   }),
   auto_renew: Joi.boolean().optional(),
   trial_days: Joi.number().integer().min(0).optional().messages({

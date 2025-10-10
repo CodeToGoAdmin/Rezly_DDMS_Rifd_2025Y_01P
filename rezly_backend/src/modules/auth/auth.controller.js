@@ -1,6 +1,7 @@
 import userModel from "../../../DB/models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { Role } from "../../../DB/models/role.model.js";
 import { AppError } from "../../../AppError.js";
 import { sendEmail } from "../../Utils/sendEmail.js";
 import { customAlphabet } from "nanoid";
@@ -12,27 +13,17 @@ import Package  from "../../../DB/models/packages.model.js";
 
 import crypto from "crypto";
 
+
+
+
+
 export const employeeSignUp = async (req, res) => {
   try {
     const {
-      firstName,
-      lastName,
-      birthDate,
-      nationalId,
-      gender,
-      phoneNumber,
-      email,
-      address,
-      jobTitle,
-      department,
-      contractType,
-      startDate,
-      username,
-      password,
-      role,
-      notes,
+      firstName,lastName,birthDate,nationalId,gender, phoneNumber,
+      email,address,jobTitle,department,contractType,startDate,
+      username, password, role,notes,
     } = req.body;
-    console.log("fhbfhjvbhjgvf");
     
     const { error } = employeeSchema.validate(req.body, { abortEarly: false });
     if (error) {
@@ -73,23 +64,10 @@ if (req.file) {
   };
 }
     const newEmployee = new Employee({
-      firstName,
-      lastName,
-      birthDate,
-      image: encryptedImage,
-      nationalId,
-      gender,
-      phoneNumber,
-      email,
-      address,
-      jobTitle,
-      department,
-      contractType,
-      startDate,
-      username,
-      password: hashedPassword,
-      role,
-      notes,
+      firstName,lastName,birthDate,image: encryptedImage,
+      nationalId, gender, phoneNumber,email,address,
+      jobTitle,department,contractType,startDate,
+      username,password: hashedPassword,role,notes,
       confirmEmail: false,
       refreshToken,
     });
@@ -204,86 +182,49 @@ export const deleteEmployee = async (req, res) => {
 
 
 ///////////////////////////////Add new member///////////////////////////////////////////////////
-
-
 export const createMember = async (req, res, next) => {
   try {
+    if (req.user?.role !== "Admin") {
+      return next(new AppError("غير مصرح لك بإنشاء مشترك جديد", 403));
+    }
     const {
-      userName,
-      firstName,
-      lastName,
-      gender,
-      idNumber,
-      birthDate,
-      phone,
-      email,
-      password,
-      city,
-      address,
-      image,
-      packageId,
-      paymentMethod,
-      coachId,
+      userName, firstName, lastName, gender, idNumber, birthDate, phone,startDate,
+      email, password, city, address, image, packageId, paymentMethod, coachId,
     } = req.body;
 
     // التأكد من عدم وجود المستخدم مسبقًا
-    const existingUser = await userModel
-      .findOne({ $or: [{ email }, { userName }, { idNumber }] })
-      .lean();
-
-    if (existingUser) {
-      return next(
-        new AppError(
-          "المستخدم موجود مسبقًا بنفس البريد أو اسم المستخدم أو رقم الهوية",
-          409
-        )
-      );
-    }
+    const existingUser = await userModel.findOne({ $or: [{ email }, { userName }, { idNumber }] });
+    if (existingUser) 
+      return next(new AppError("المستخدم موجود مسبقًا بنفس البريد أو اسم المستخدم أو رقم الهوية", 409));
 
     // التأكد من وجود الباقة
     const selectedPackage = await Package.findById(packageId);
-    if (!selectedPackage) {
+    if (!selectedPackage) 
       return next(new AppError("الاشتراك المحدد غير موجود", 404));
-    }
 
     // تشفير كلمة المرور
-    const hashedPassword = await bcrypt.hash(
-      password,
-      parseInt(process.env.SALTROUND)
-    );
+    const hashedPassword = await bcrypt.hash(password, parseInt(process.env.SALTROUND));
 
     // إنشاء refresh token
-    const refreshToken = jwt.sign(
-      { id: new mongoose.Types.ObjectId() },
-      process.env.REFRESHTOKEN_SECRET,
-      { expiresIn: "30d" }
-    );
+    const refreshToken = jwt.sign({ id: new mongoose.Types.ObjectId() }, process.env.REFRESHTOKEN_SECRET, { expiresIn: "30d" });
 
     // حساب تاريخ انتهاء الاشتراك
     let endDate = new Date();
     const unit = selectedPackage.duration_unit.toLowerCase();
     switch (unit) {
-      case "days":
-        endDate.setDate(endDate.getDate() + selectedPackage.duration_value);
-        break;
-      case "weeks":
-        endDate.setDate(
-          endDate.getDate() + selectedPackage.duration_value * 7
-        );
-        break;
-      case "months":
-        endDate.setMonth(
-          endDate.getMonth() + selectedPackage.duration_value
-        );
-        break;
-      case "years":
-        endDate.setFullYear(
-          endDate.getFullYear() + selectedPackage.duration_value
-        );
-        break;
+      case "days": endDate.setDate(endDate.getDate() + selectedPackage.duration_value); break;
+      case "weeks": endDate.setDate(endDate.getDate() + selectedPackage.duration_value * 7); break;
+      case "months": endDate.setMonth(endDate.getMonth() + selectedPackage.duration_value); break;
+      case "years": endDate.setFullYear(endDate.getFullYear() + selectedPackage.duration_value); break;
     }
 
-    // إنشاء العضو
+    // التأكد من وجود دور Member
+    let memberRole = await Role.findOne({ name: "Member" });
+    if (!memberRole) {
+      memberRole = await Role.create({ name: "Member", description: "مشترك في النظام", permissions: [] });
+    }
+
+    // إنشاء العضو وحفظه
     const member = await userModel.create({
       userName,
       firstName,
@@ -296,36 +237,40 @@ export const createMember = async (req, res, next) => {
       password: hashedPassword,
       address: `${city || ""} - ${address || ""}`,
       image,
-      role: "Member",
+      roleId: memberRole._id,
+      packageId: packageId,  // ربط العضو بالباكيج
+      coachId: coachId,
       paymentStatus: "مدفوع",
       subscriptionStatus: "Active",
-      responsibleEmployee: req.user?._id, // الأدمن الذي أضاف العضو
-      startDate: new Date(),
+      responsibleEmployee: req.user?._id,
+      startDate: startDate ? new Date(startDate) : new Date(), //اذا ما دخل تاريخ يحسبه تاريخ اليوم الحالي ,
       endDate,
       slug: arabicSlugify(`${firstName}-${lastName}-${userName}`),
       refreshToken,
     });
 
-    // إنشاء توكن تأكيد البريد
-    const confirmToken = jwt.sign(
-      { email },
-      process.env.CONFIRMEMAILTOKEN,
-      { expiresIn: "1h" }
-    );
+    // populate الدور + الباكيج + الموظف المسؤول
+    const populatedMember = await userModel.findById(member._id)
+      .populate({ path: "roleId", select: "name description" })
+      .populate({ path: "packageId", select: "name price_cents duration_value duration_unit price_type" })
+      .populate({ path: "responsibleEmployee", select: "firstName lastName email" })
+      .populate({ path: "coachId", select: "_id username firstName lastName email phoneNumber" })
 
+      .lean();
+
+    // إنشاء توكن تأكيد البريد
+    const confirmToken = jwt.sign({ email }, process.env.CONFIRMEMAILTOKEN, { expiresIn: "1h" });
     await sendEmail(email, "تأكيد الحساب في النظام", userName, confirmToken);
 
     // ربط العضو بالمدرب (إن وجد)
     if (coachId) {
-      await userModel.findByIdAndUpdate(coachId, {
-        $push: { members: member._id },
-      });
+      await userModel.findByIdAndUpdate(coachId, { $push: { members: member._id } });
     }
 
     // الرد النهائي
     return res.status(201).json({
       message: "تم إنشاء المشترك بنجاح",
-      member,
+      member: populatedMember,
       package: {
         name: selectedPackage.name,
         price: selectedPackage.price_cents / 100,
@@ -333,10 +278,12 @@ export const createMember = async (req, res, next) => {
         paymentMethod,
       },
     });
+
   } catch (error) {
     next(error);
   }
 };
+
 
 
 export const toggleEmployeeStatus = async (req, res) => {
@@ -380,7 +327,7 @@ export const toggleEmployeeStatus = async (req, res) => {
 
 export const SignUp = async (req, res, next) => {
     try {
-        const { userName, email, password, phone, gender, midicalIssue, role } = req.body;
+        const { userName, email, password, phone} = req.body;
 
         // تحقق من وجود المستخدم مع استخدام projection أصغر لتسريع الاستعلام
         const existingUser = await userModel.findOne({ email }).lean();
@@ -399,9 +346,6 @@ export const SignUp = async (req, res, next) => {
             email,
             password: passwordHashed,
             phone,
-            gender,
-            midicalIssue,
-            role,
             slug: arabicSlugify(`${userName.trim()}-${new mongoose.Types.ObjectId()}`),
             refreshToken
         });
@@ -635,6 +579,158 @@ export const forgotpassword = async (req, res, next) => {
 
     await user.save();
     return res.status(200).json({ message: "success" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+
+///////////////update member by admin///////////////////////////
+//////الايميل ورقم الهاتف سمحت بتعديلهم بحالة صار تغيير بالايميل مع انه منطقيا ما بحس صح اعدلهم
+
+export const updateMember = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const {firstName,lastName,phone,email,city,address,image,password,packageId,paymentMethod,coachId,
+    } = req.body;
+
+
+    if (req.user.role !== "Admin") {
+      return next(new AppError("غير مصرح لك بتعديل بيانات الأعضاء", 403));
+    }
+
+    
+    const member = await userModel.findById(id); 
+    if (!member) {
+      return next(new AppError("المشترك غير موجود", 404));
+    }
+
+  
+    const duplicate = await userModel.findOne({
+      _id: { $ne: id }, 
+      $or: [{ email }, { phone }],
+    });
+
+    if (duplicate) {
+      return next(new AppError("البريد الإلكتروني أو رقم الهاتف مستخدم مسبقًا", 409));
+    }
+
+    if (password) {
+      member.password = await bcrypt.hash(password, parseInt(process.env.SALTROUND));
+    }
+
+    // تعديل الحقول المسموح بها فقط
+    if (firstName) member.firstName = firstName;
+    if (lastName) member.lastName = lastName;
+    if (phone) member.phone = phone;
+    if (email) member.email = email;
+    if (city || address)
+      member.address = `${city || ""} - ${address || ""}`.trim();
+    if (image) member.image = image;
+    member.slug = arabicSlugify(`${member.firstName}-${member.lastName}-${member.userName}`);
+
+    if (packageId) {
+      const selectedPackage = await Package.findById(packageId);
+      if (!selectedPackage)
+        return next(new AppError("الباقة المحددة غير موجودة", 404));
+
+      member.packageId = selectedPackage._id;
+      member.paymentMethod = paymentMethod || member.paymentMethod;
+      member.paymentStatus = "مدفوع";
+      member.subscriptionStatus = "Active";
+      member.startDate = req.body.startDate ? new Date(req.body.startDate) : new Date();
+
+
+      let endDate = new Date();
+      const unit = selectedPackage.duration_unit.toLowerCase();
+      switch (unit) {
+        case "days":
+          endDate.setDate(endDate.getDate() + selectedPackage.duration_value);
+          break;
+        case "weeks":
+          endDate.setDate(endDate.getDate() + selectedPackage.duration_value * 7);
+          break;
+        case "months":
+          endDate.setMonth(endDate.getMonth() + selectedPackage.duration_value);
+          break;
+        case "years":
+          endDate.setFullYear(endDate.getFullYear() + selectedPackage.duration_value);
+          break;
+      }
+      member.endDate = endDate;
+    }
+
+    if (coachId && coachId.toString() !== member.coachId?.toString()) {
+      if (member.coachId) {
+        await userModel.findByIdAndUpdate(member.coachId, {
+          $pull: { members: member._id },
+        });
+      }
+      await userModel.findByIdAndUpdate(coachId, {
+        $push: { members: member._id },
+      });
+      member.coachId = coachId;
+    }
+
+    await member.save();
+    const populatedMember = await userModel.findById(member._id)
+  .populate({ path: "roleId", select: "name description" })
+  .populate({ path: "packageId", select: "name price_cents duration_value duration_unit price_type" })
+  .populate({ path: "responsibleEmployee", select: "firstName lastName email" })
+  .populate({ path: "coachId", select: "_id username firstName lastName email phoneNumber" })
+  .lean();
+
+    return res.status(200).json({
+      message: "تم تعديل بيانات المشترك بنجاح",
+      member: populatedMember,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+///////////////// get all members for admin /////////////////////
+export const getAllMembers = async (req, res, next) => {
+  try {
+    // تحقق من دور المستخدم الحالي
+    if (req.user?.role !== "Admin") {
+      return next(new AppError("غير مصرح لك برؤية المشتركين", 403));
+    }
+
+    // جلب كل الأعضاء
+    // responsipleEmployee هو الموظف المسؤول عن إضافة العضو
+
+    const members = await userModel.find()
+      .populate({ path: "roleId", select: "name description" })
+      .populate({ path: "packageId", select: "name price_cents duration_value duration_unit price_type" })
+      .populate({ path: "responsibleEmployee", select: "firstName lastName email phone" })
+      .lean();
+
+    // تصفية المستخدمين الذين لديهم دور Member فقط
+    const filteredMembers = members.filter(user => user.roleId?.name === "Member");
+
+    // تحويل الباكيج للعرض النهائي
+    const formattedMembers = filteredMembers.map(user => {
+      return {
+        ...user,
+        package: user.packageId ? {
+          name: user.packageId.name,
+          price: user.packageId.price_cents / 100,
+          duration: `${user.packageId.duration_value} ${user.packageId.duration_unit}`,
+          price_type: user.packageId.price_type
+        } : null
+      };
+    });
+
+    res.status(200).json({
+      message: "تم جلب جميع المشتركين (الأعضاء) بنجاح",
+      count: formattedMembers.length,
+      data: formattedMembers,
+    });
+
   } catch (error) {
     next(error);
   }

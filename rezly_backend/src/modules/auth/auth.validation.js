@@ -14,21 +14,6 @@ export const signUpSchema= Joi.object({
 
     phone:generalFeilds.phone,
 
-      
-    role: Joi.string().valid('Member','Admin','Coach','Receptionist').optional().messages({
-      'any.only': 'Role must be either Coach or Admin  or Member or Receptionist',
-    }),
-
-    gender: Joi.string().valid('Male', 'Female').required().messages({
-  'string.empty': 'Gender is required',
-  'any.only': 'Gender must be either "Male" or "Female"'
-}),
-
-midicalIssue: Joi.string().max(255).allow('').messages({
-  'string.max': 'Medical issue cannot exceed 255 characters'
-}),
-
-
 })
 export const SignInSchema = Joi.object({
   identifier: Joi.required().messages({
@@ -105,7 +90,9 @@ image: Joi.any().optional().strip(),
     "any.required": "القسم مطلوب",
   }),
   contractType: Joi.string()
-    .valid("دوام كامل", "دوام جزئي", "عقد مؤقت")
+  .trim() 
+    .valid("كامل", "جزئي", " مؤقت")
+    .insensitive()
     .required()
     .messages({
       "any.only": "اختر نوع عقد صالح",
@@ -169,5 +156,34 @@ export const createMemberSchema = Joi.object({
     "any.only": "طريقة الدفع غير صحيحة",
     "string.empty": "طريقة الدفع مطلوبة",
   }),
+  startDate: Joi.date().optional().messages({
+  "date.base": "تاريخ البداية غير صالح",
+}),
   coachId: Joi.string().optional().allow(""),
 });
+
+export const updateMemberSchema = Joi.object({
+  firstName: Joi.string().optional().messages({
+    "string.empty": "الاسم الأول مطلوب",
+  }),
+  lastName: Joi.string().optional().messages({
+    "string.empty": "الاسم الأخير مطلوب",
+  }),
+  phone: generalFeilds.phone.optional(),
+  email: generalFeilds.email.optional(),
+  password: generalFeilds.password.optional(),
+  city: Joi.string().optional().allow(""),
+  address: Joi.string().optional().allow(""),
+  image: Joi.string().uri().optional().allow(""),
+  notes: Joi.string().optional().allow(""),
+  packageId: Joi.string().optional().messages({
+    "string.empty": "الاشتراك مطلوب",
+  }),
+  paymentMethod: Joi.string()
+    .valid("نقداً", "بطاقة", "أونلاين")
+    .optional()
+    .messages({
+      "any.only": "طريقة الدفع غير صحيحة",
+    }),
+  coachId: Joi.string().optional().allow(""),
+}).unknown(true);

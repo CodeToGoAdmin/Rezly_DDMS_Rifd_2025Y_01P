@@ -56,6 +56,12 @@ const packageSchema = new Schema(
       type: Boolean,
       default: true,
     },
+    startDate: { 
+      type: Date 
+    },
+    endDate: { 
+      type: Date
+     },   
   },
   {
     timestamps: true,
@@ -63,7 +69,7 @@ const packageSchema = new Schema(
 );
 
 // Middleware لتوليد slug فريد
-packageSchema.pre("save", async function (next) {
+/*packageSchema.pre("save", async function (next) {
   if (this.isModified("name")) {
     let baseSlug = slugify(this.name, { lower: true, strict: true });
     let slug = baseSlug;
@@ -78,7 +84,7 @@ packageSchema.pre("save", async function (next) {
     this.slug = slug;
   }
   next();
-});
+});*/
 
 const Package = model("Package", packageSchema);
 export default Package;

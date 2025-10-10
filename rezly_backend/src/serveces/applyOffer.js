@@ -1,3 +1,5 @@
+
+import Offer from "../../DB/models/offer.model.js";
 export const applyOffers = async (pkg) => {
   const now = new Date();
 
