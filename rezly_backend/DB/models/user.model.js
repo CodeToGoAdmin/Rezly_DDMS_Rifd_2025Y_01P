@@ -11,18 +11,16 @@ const userSchema = new Schema(
       trim: true,
     },
 
-    firstName: { type: String, required: true, trim: true },
-    lastName: { type: String, required: true, trim: true },
+    firstName: { type: String, trim: true },
+    lastName: { type: String, trim: true },
 
     gender: {
       type: String,
       enum: ["ذكر", "أنثى"],
-      required: true,
     },
 
     idNumber: {
       type: String,
-      required: true,
       trim: true,
       unique: true,
     },
@@ -72,7 +70,7 @@ const userSchema = new Schema(
 
     contractType: {
       type: String,
-      enum: ["جزئي", "كلي"],
+      enum: ["دوام جزئي", "دوام كلي"],
     },
 
     startDate: {
@@ -96,12 +94,6 @@ const userSchema = new Schema(
       type: String,
       enum: ["Active", "Expired", "Frozen"],
       default: "Active",
-    },
-
-    // 🆕 الموظف المسؤول (اللي أضاف هذا المستخدم)
-    responsibleEmployee: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
     },
 
     image: {
@@ -147,11 +139,31 @@ const userSchema = new Schema(
     ref: "Role",
     default: null,
   },
+  packageId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Package",
+    default: null,
+  },
+    // 🆕 الموظف المسؤول (اللي أضاف هذا المستخدم)
+  responsibleEmployee:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Employee",
+    default: null,
+  },
+  coachId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Employee",
+  default: null
+},
 
 },
 
 
-  { timestamps: true }
+  { timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+   } 
+  
 )
 const userModel = model("User", userSchema);
 export default userModel;
