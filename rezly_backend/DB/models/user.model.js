@@ -58,19 +58,12 @@ const userSchema = new Schema(
 
     jobTitle: {
       type: String,
-      enum: [
-        "مدير",
-        "رئيس قسم",
-        "موظف استقبال",
-        "محاسب",
-        "مدرب",
-        "عامل نظافة",
-      ],
+      enum: ["مدير", "رئيس قسم", "موظف استقبال", "محاسب", "مدرب", "عامل نظافة"],
     },
 
     contractType: {
       type: String,
-      enum: ["دوام جزئي", "دوام كلي"],
+      enum: ["جزئي", "كامل"],
     },
 
     startDate: {
@@ -82,7 +75,6 @@ const userSchema = new Schema(
       type: Date,
     },
 
-  
     paymentStatus: {
       type: String,
       enum: ["مدفوع", "غير مدفوع", "قيد المعالجة"],
@@ -99,8 +91,6 @@ const userSchema = new Schema(
     image: {
       type: Object,
     },
-
-
 
     notes: {
       type: String,
@@ -134,36 +124,30 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
-     roleId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Role",
-    default: null,
-  },
-  packageId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Package",
-    default: null,
-  },
+    roleId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Role",
+      default: null,
+    },
+    packageId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Package",
+      default: null,
+    },
     // 🆕 الموظف المسؤول (اللي أضاف هذا المستخدم)
-  responsibleEmployee:{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Employee",
-    default: null,
+    responsibleEmployee: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Employee",
+      default: null,
+    },
+    coachId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Employee",
+      default: null,
+    },
   },
-  coachId: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "Employee",
-  default: null
-},
 
-},
-
-
-  { timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-   } 
-  
-)
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
+);
 const userModel = model("User", userSchema);
 export default userModel;
