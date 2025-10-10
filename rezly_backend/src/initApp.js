@@ -24,6 +24,9 @@ console.log("njkfdnkjf");
   app.use('/booking', bookingRouter);
  app.use('/package', packageRouter);
     app.use('/forms', formRouter);
+    app.use("/permissions", permissionsRouter);
+  app.use("/roles", rolesRouter);
+  app.use("/employees", employeesRouter);
 
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
