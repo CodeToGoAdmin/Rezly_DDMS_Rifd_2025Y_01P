@@ -13,10 +13,6 @@ router.post('/SignUp',validation(schema.signUpSchema),asyncHandler (authControll
 
 router.post('/SignIn',validation(schema.SignInSchema),asyncHandler(authController.SignIn));
 
-router.get('/getAllEmployees',auth([roles.Admin]),
-asyncHandler(authController.getAllEmployees));
-router.delete('/deleteEmployee',auth([roles.Admin]),
-asyncHandler(authController.deleteEmployee));
 
 router.post("/addNewMember", auth([ roles.Admin]), validation(schema.createMemberSchema), asyncHandler(authController.createMember));
 router.put("/updateMember/:id", auth([ roles.Admin]), validation(schema.updateMemberSchema), asyncHandler(authController.updateMember));
@@ -40,9 +36,21 @@ router.post(
 validation(schema.employeeSchema, { allowUnknown: true }),
   asyncHandler(authController.employeeSignUp)
 );
+router.get('/getAllEmployees',auth([roles.Admin]),
+asyncHandler(authController.getAllEmployees));
+router.put(
+  "/updateEmployee/:id",
+  upload.single("image"), 
+  auth([roles.Admin,roles.Accountant,roles.Coach,roles.Member,roles.Receptionist]),
+  validation(schema.employeeUpdateSchema, { allowUnknown: true }),
+
+  asyncHandler(authController.updateEmployee)
+);
+
+router.delete('/deleteEmployee',auth([roles.Admin]),
+asyncHandler(authController.deleteEmployee));
 
 router.post('/refresh', asyncHandler(authController.refresh))
-
 router.post('/logout',auth(),asyncHandler(authController.logout));
 
 router.put('/sendCode',validation(schema.sendCodeSchema),asyncHandler(authController.sendCode));

@@ -46,7 +46,7 @@ router.get(
 
 // تحديث حجز حسب ID (Admin & Coach)
 router.put(
-  '/:id',
+  '/:bookingIdOrGroupId',
   auth([roles.Admin, roles.Coach]),
   validateBody(updateBookingSchema),
   asyncHandler(updateBooking)

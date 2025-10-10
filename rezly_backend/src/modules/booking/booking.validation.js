@@ -68,7 +68,7 @@ export const createBookingSchema = Joi.object({
     }),
 
   subscriptionDuration: Joi.string()
-    .valid("1week","2weeks","3weeks","1month","3months","6months","1year")
+    .valid("1day","1week","2weeks","3weeks","1month","3months","6months","1year")
     .required()
     .messages({
       "any.required": "مدة الاشتراك مطلوبة",
@@ -145,8 +145,8 @@ export const updateBookingSchema = Joi.object({
     }),
 
   subscriptionDuration: Joi.string()
-    .valid("1week","2weeks","3weeks","1month","3months","6months","1year")
-    .required()
+    .valid("1day","1week","2weeks","3weeks","1month","3months","6months","1year")
+    .optional()
     .messages({
       "any.required": "مدة الاشتراك مطلوبة",
       "any.only": "مدة الاشتراك غير صالحة",

@@ -325,224 +325,170 @@ return res.status(201).json({
 //compress, morgan login
 export const updateBooking = async (req, res, next) => {
   try {
-    const bookingId = req.params.id;
+    const bookingIdOrGroupId = req.params.bookingIdOrGroupId;
+    const { updateGroup, updateFuture } = req.query;
     const {
-      service,
-      description,
-      coachId,
-      location,
-      date,
-      timeStart,
-      timeEnd,
-      recurrence = [],
-      reminders = [],
-      maxMembers,
-      members = [],
+      service, description, coachId, location,
+      date, timeStart, timeEnd, recurrence = [],
+      reminders = [], maxMembers, members = [],
       subscriptionDuration
     } = req.body;
 
-    // جلب الحجز الحالي
-    const existingBooking = await Booking.findById(bookingId);
-    if (!existingBooking) {
-      return res.status(404).json({ status: "error", message: "Booking not found" });
-    }
-const bookingsToUpdate = await Booking.find({ groupId: existingBooking.groupId });
+    // ===== تحديد الحجوزات =====
+    let bookingsToUpdate = [];
+    let existingBooking = null;if (updateGroup === "true") {
+  // كل الحجوزات بنفس groupId
+  bookingsToUpdate = await Booking.find({ groupId: bookingIdOrGroupId });
+  if (!bookingsToUpdate.length)
+    return res.status(404).json({ status: "error", message: "No bookings found for this group" });
+} else {
+  existingBooking = await Booking.findById(bookingIdOrGroupId);
+  if (!existingBooking)
+    return res.status(404).json({ status: "error", message: "Booking not found" });
 
-    // صلاحية المستخدم
-    let finalCoachId = coachId || existingBooking.coach;
-    if (req.user.role === "Admin") {
-      if (!finalCoachId)
-        return res.status(400).json({ status: "error", message: "Coach ID is required" });
-    } else if (req.user.role === "Coach") {
-      if (existingBooking.coach.toString() !== req.user._id.toString()) {
-        return res.status(403).json({ status: "error", message: "Not authorized to update this booking" });
-      }
-      finalCoachId = req.user._id;
-    } else {
-      return res.status(403).json({ status: "error", message: "Not authorized" });
-    }
+  // الحجز الفردي
+  existingBooking.recurrence = [];
+  existingBooking.subscriptionDuration = 1;
 
-    // التحقق من الكوتش
-    const coach = await Employee.findById(finalCoachId).lean();
-    if (!coach || coach.role.toLowerCase() !== "coach") {
-      return res.status(400).json({ status: "error", message: "Coach not found or invalid role" });
-    }
+  bookingsToUpdate = [existingBooking];
 
-    // ===== فحص التاريخ =====
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const selectedDate = new Date(date);
-    selectedDate.setHours(0, 0, 0, 0);
-    if (selectedDate < today) {
-      return res.status(400).json({ message: "لا يمكن اختيار تاريخ في الماضي. يرجى تحديد تاريخ اليوم أو بعده." });
-    }
-
-    // ===== تحويل الوقت العربي لساعات ودقائق =====
-    const toHourMinuteArray = (timeStr) => {
-      const [time, meridiem] = timeStr.split(" ");
-      let [hours, minutes] = time.split(":").map(Number);
-      if (meridiem === "م" && hours !== 12) hours += 12;
-      if (meridiem === "ص" && hours === 12) hours = 0;
-      return [hours, minutes];
-    };
-
-    const [startH, startM] = toHourMinuteArray(timeStart);
-    const [endH, endM] = toHourMinuteArray(timeEnd);
-
-    // Helper to create Date from date string + time
-    const makeDateTime = (dateStr, hours, minutes) => {
-      const d = new Date(dateStr);
-      d.setHours(hours, minutes, 0, 0);
-      return d;
-    };
-
-    const firstStart = makeDateTime(date, startH, startM);
-    const firstEnd = makeDateTime(date, endH, endM);
-
-    // ===== تحقق من التعارض مع الكوتش والغرفة للحجز الرئيسي =====
-    const startOfDay = makeDateTime(date, 0, 0);
-    const endOfDay = makeDateTime(date, 23, 59);
-
-    const existingCoachBookings = await Booking.find({
-      _id: { $ne: bookingId },
-      coach: finalCoachId,
-      date: { $gte: startOfDay, $lte: endOfDay }
-    }).lean();
-
-    const conflictCoach = existingCoachBookings.some(b => {
-      const [sH, sM] = toHourMinuteArray(b.timeStart);
-      const [eH, eM] = toHourMinuteArray(b.timeEnd);
-      const s = makeDateTime(b.date, sH, sM);
-      const e = makeDateTime(b.date, eH, eM);
-      return firstStart < e && firstEnd > s;
+  if (!updateFuture || updateFuture !== "true") {
+    req.body.recurrence = [];
+    req.body.subscriptionDuration = 1; // يوم واحد
+  } else if (existingBooking.groupId) {
+    const futureBookings = await Booking.find({
+      groupId: existingBooking.groupId,
+      date: { $gte: existingBooking.date }
     });
-
-    const existingRoomBookings = await Booking.find({
-      _id: { $ne: bookingId },
-      location,
-      date: { $gte: startOfDay, $lte: endOfDay }
-    }).lean();
-
-    const conflictRoom = existingRoomBookings.some(b => {
-      const [sH, sM] = toHourMinuteArray(b.timeStart);
-      const [eH, eM] = toHourMinuteArray(b.timeEnd);
-      const s = makeDateTime(b.date, sH, sM);
-      const e = makeDateTime(b.date, eH, eM);
-      return firstStart < e && firstEnd > s;
-    });
-
-    if (conflictCoach) return res.status(400).json({ status: "error", message: "هذا الكوتش لديه حجز آخر في نفس الوقت" });
-    if (conflictRoom) return res.status(400).json({ status: "error", message: "الغرفة محجوزة في نفس الوقت" });
-
-    // ===== تحديث الحجز الرئيسي =====
-await Promise.all(bookingsToUpdate.map(b => {
-  b.service = service || b.service;
-  b.description = description || b.description;
-  b.coach = finalCoachId || b.coach;
-  b.location = location || b.location;
-  b.date = date || b.date;
-  b.timeStart = timeStart || b.timeStart;
-  b.timeEnd = timeEnd || b.timeEnd;
-  b.maxMembers = maxMembers || b.maxMembers;
-  b.recurrence = recurrence.length ? recurrence : b.recurrence;
-  b.reminders = reminders.length ? reminders : b.reminders;
-  b.subscriptionDuration = subscriptionDuration || b.subscriptionDuration;
-  return b.save();
-}));
-
-
-    // ===== تحديث الأعضاء =====
- if (Array.isArray(members) && members.length > 0) {
-  await BookingMember.deleteMany({ booking: { $in: bookingsToUpdate.map(b => b._id) } });
-  const bookingMembers = bookingsToUpdate.flatMap(b =>
-    members.map(memberId => ({ booking: b._id, member: memberId, joinedAt: new Date() }))
-  );
-  await BookingMember.insertMany(bookingMembers);
+    bookingsToUpdate = futureBookings.length ? futureBookings : bookingsToUpdate;
+  }
 }
 
+    const excludedIds = bookingsToUpdate.map(b => b._id);
 
-    // ===== التعامل مع recurrence بنفس الطريقة مع تخزين التاريخ كسلسلة =====
-    let createdBookings = [existingBooking];
+    // ===== صلاحيات المستخدم =====
+    let finalCoachId = coachId || (existingBooking ? existingBooking.coach : null);
+    if (req.user.role === "Coach") finalCoachId = req.user._id;
+
+    const coach = await Employee.findById(finalCoachId).lean();
+    if (!coach || coach.role.toLowerCase() !== "coach")
+      return res.status(400).json({ status: "error", message: "Coach not found or invalid role" });
+
+    // ===== تحويل الوقت العربي =====
+    const toHM = (timeStr) => {
+      if (!timeStr) return [0, 0];
+      const [t, meridiem] = timeStr.split(" ");
+      let [h, m] = t.split(":").map(Number);
+      if (meridiem === "م" && h !== 12) h += 12;
+      if (meridiem === "ص" && h === 12) h = 0;
+      return [h, m];
+    };
+    const makeDT = (dateStr, h, m) => { const d = new Date(dateStr); d.setHours(h, m, 0, 0); return d; };
+    const [startH, startM] = toHM(timeStart);
+    const [endH, endM] = toHM(timeEnd);
+    const firstStart = makeDT(date, startH, startM);
+    const firstEnd = makeDT(date, endH, endM);
+
+    // ===== تحقق التعارض مع الكوتش والغرفة =====
+    const conflict = async (field, checkDate) => {
+      const items = await Booking.find({
+        _id: { $nin: excludedIds },
+        [field]: field === "coach" ? finalCoachId : location,
+        date: checkDate
+      }).lean();
+
+      return items.some(b => {
+        const [sH, sM] = toHM(b.timeStart);
+        const [eH, eM] = toHM(b.timeEnd);
+        const s = makeDT(b.date, sH, sM);
+        const e = makeDT(b.date, eH, eM);
+        return firstStart < e && firstEnd > s;
+      });
+    };
+
+    if (await conflict("coach", date)) return res.status(400).json({ status: "error", message: "Coach busy" });
+    if (await conflict("location", date)) return res.status(400).json({ status: "error", message: "Room busy" });
+
+    // ===== تحديث الحجوزات =====
+    await Promise.all(bookingsToUpdate.map(b => {
+      b.service = service ?? b.service;
+      b.description = description ?? b.description;
+      b.coach = finalCoachId ?? b.coach;
+      b.location = location ?? b.location;
+      b.date = date ?? b.date;
+      b.timeStart = timeStart ?? b.timeStart;
+      b.timeEnd = timeEnd ?? b.timeEnd;
+      b.maxMembers = maxMembers ?? b.maxMembers;
+      b.recurrence = recurrence.length ? recurrence : b.recurrence;
+      b.reminders = reminders.length ? reminders : b.reminders;
+      b.subscriptionDuration = subscriptionDuration ?? b.subscriptionDuration;
+      return b.save();
+    }));
+
+    // ===== تحديث الأعضاء =====
+    if (members.length) {
+      await BookingMember.deleteMany({ booking: { $in: excludedIds } });
+      const bookingMembers = bookingsToUpdate.flatMap(b =>
+        members.map(memberId => ({ booking: b._id, member: memberId, joinedAt: new Date() }))
+      );
+      await BookingMember.insertMany(bookingMembers);
+    }
+
+    // ===== التعامل مع recurrence وحذف الحجوزات الزائدة =====
+    let createdBookings = [...bookingsToUpdate];
     let conflictedDays = [];
 
     if (recurrence.length && subscriptionDuration) {
-      const weekDaysMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
-      const weeksToRepeat = { "1week":1, "2weeks":2, "3weeks":3, "1month":4, "3months":12, "6months":24, "1year":52 }[subscriptionDuration] || 1;
+      const weekMap = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
+      const weeksToRepeat = { "1week":1,"2weeks":2,"3weeks":3,"1month":4,"3months":12,"6months":24,"1year":52 }[subscriptionDuration] || 1;
 
-      for (let w = 0; w < weeksToRepeat; w++) {
-        for (const day of recurrence) {
-          const dayIndex = weekDaysMap[day];
-          const offset = (dayIndex - new Date(date).getDay() + 7) % 7;
+      // احسب التواريخ الجديدة
+      let plannedDates = [];
+      for (let w=0; w<weeksToRepeat; w++){
+        for (const day of recurrence){
+          const dayIndex = weekMap[day];
+          const offset = (dayIndex - new Date(date).getDay() + 7)%7;
           const newDate = new Date(date);
           newDate.setDate(newDate.getDate() + offset + w*7);
-          const newDateStr = newDate.toISOString().split("T")[0]; // keep as string
-
-          if (w === 0 && offset === 0) continue; // skip the first occurrence
-
-          const startDateTimeCurrent = makeDateTime(newDateStr, startH, startM);
-          const endDateTimeCurrent = makeDateTime(newDateStr, endH, endM);
-
-          const existingCoachBookings = await Booking.find({
-            _id: { $ne: bookingId },
-            coach: finalCoachId,
-            date: newDateStr
-          }).lean();
-
-          const conflictCoach = existingCoachBookings.some(b => {
-            const [bsH, bsM] = toHourMinuteArray(b.timeStart);
-            const [beH, beM] = toHourMinuteArray(b.timeEnd);
-            const s = makeDateTime(b.date, bsH, bsM);
-            const e = makeDateTime(b.date, beH, beM);
-            return startDateTimeCurrent < e && endDateTimeCurrent > s;
-          });
-
-          const existingRoomBookings = await Booking.find({
-            _id: { $ne: bookingId },
-            location,
-            date: newDateStr
-          }).lean();
-
-          const conflictRoom = existingRoomBookings.some(b => {
-            const [bsH, bsM] = toHourMinuteArray(b.timeStart);
-            const [beH, beM] = toHourMinuteArray(b.timeEnd);
-            const s = makeDateTime(b.date, bsH, bsM);
-            const e = makeDateTime(b.date, beH, beM);
-            return startDateTimeCurrent < e && endDateTimeCurrent > s;
-          });
-
-          if (conflictCoach || conflictRoom) {
-            conflictedDays.push({ date: newDateStr, reason: conflictCoach ? "Coach busy" : "Room busy" });
-            continue;
-          }
-
-          const newBooking = await Booking.create({
-            service,
-            description,
-            coach: finalCoachId,
-            location,
-            date: newDateStr,
-            timeStart,
-            timeEnd,
-            maxMembers,
-            recurrence,
-            reminders,
-            subscriptionDuration
-          });
-          createdBookings.push(newBooking);
+          plannedDates.push(newDate.toISOString().split("T")[0]);
         }
+      }
+
+      // حذف أي حجوزات موجودة خارج plannedDates (لـ groupId)
+      if (updateGroup === "true") {
+        await Booking.deleteMany({
+          groupId: bookingIdOrGroupId,
+          date: { $nin: plannedDates }
+        });
+      }
+
+      // إضافة الحجوزات الجديدة مع التحقق من التعارض
+      for (const newDateStr of plannedDates) {
+        if (bookingsToUpdate.some(b => b.date.toISOString().split("T")[0] === newDateStr)) continue;
+        if (await conflict("coach", newDateStr) || await conflict("location", newDateStr)) {
+          conflictedDays.push({ date:newDateStr, reason: "Conflict" });
+          continue;
+        }
+        const newB = await Booking.create({
+          service, description, coach:finalCoachId, location,
+          date:newDateStr, timeStart, timeEnd, maxMembers,
+          recurrence, reminders, subscriptionDuration,
+          groupId: existingBooking ? existingBooking.groupId : bookingIdOrGroupId
+        });
+        createdBookings.push(newB);
       }
     }
 
     return res.status(200).json({
-      status: "success",
-      data: createdBookings,
+      status:"success",
+      data:createdBookings,
       conflictedDays,
-      message: "Booking updated successfully; some days conflicted"
+      message:"Booking updated successfully"
     });
 
   } catch (err) {
     console.error("Booking update error:", err);
-    res.status(500).json({ status: "error", message: err.message });
+    res.status(500).json({ status:"error", message:err.message });
   }
 };
 
@@ -552,60 +498,75 @@ export const deleteBooking = async (req, res, next) => {
   try {
     const { user } = req;
     const role = user.role.toLowerCase();
-    const bookingId = req.params.id;
-    const { deleteGroup } = req.query; // optional query param: ?deleteGroup=true
+    const { id } = req.params; // ممكن يكون bookingId أو groupId
+    const { type } = req.query; // type=group أو type=single
 
-    if (!mongoose.Types.ObjectId.isValid(bookingId)) {
-      return res.status(400).json({ status: "error", message: "Invalid booking ID" });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ status: "error", message: "Invalid ID" });
     }
 
-    const booking = await Booking.findById(bookingId).lean();
-    if (!booking) {
-      return res.status(404).json({ status: "error", message: "Booking not found" });
-    }
-
-    // تحقق من صلاحيات الكوتش
-    if (role === "coach" && booking.coach.toString() !== user._id.toString()) {
-      return res.status(403).json({ status: "error", message: "Not authorized to delete this booking" });
-    }
-
-    // ===== الحذف حسب groupId أو حجز واحد =====
     let deletedCount = 0;
-    if (deleteGroup === "true" && booking.groupId) {
-      // حذف كل الحجوزات ضمن نفس الـ groupId
-      const groupBookings = await Booking.find({ groupId: booking.groupId }).select("_id").lean();
+
+    // ====== حذف مجموعة كاملة ======
+    if (type === "group") {
+      const groupBookings = await Booking.find({ groupId: id }).lean();
+      if (!groupBookings.length) {
+        return res.status(404).json({ status: "error", message: "No bookings found for this groupId" });
+      }
+
+      // تحقق من صلاحية الكوتش
+      if (role === "coach") {
+        const isOwner = groupBookings.every(b => b.coach.toString() === user._id.toString());
+        if (!isOwner) {
+          return res.status(403).json({ status: "error", message: "Not authorized to delete this group" });
+        }
+      }
+
       const groupBookingIds = groupBookings.map(b => b._id);
 
+      // حذف جميع الميمبرز المرتبطين بالجروب
       await BookingMember.deleteMany({ booking: { $in: groupBookingIds } });
+
+      // حذف جميع الحجوزات
       const result = await Booking.deleteMany({ _id: { $in: groupBookingIds } });
       deletedCount = result.deletedCount;
-    } else {
-      // حذف الحجز الحالي فقط
-      if (role === "admin") {
-        await BookingMember.deleteMany({ booking: booking._id });
-        await Booking.findByIdAndDelete(booking._id);
-        deletedCount = 1;
-      } else {
-        // Coach: مجرد تغيير الحالة
-        await Booking.updateOne(
-          { _id: booking._id },
-          { $set: { status: "cancelled", cancelledAt: new Date() } }
-        );
-        deletedCount = 1;
-      }
+
+      return res.status(200).json({
+        status: "success",
+        message: `Deleted ${deletedCount} bookings and all related members from the group successfully`,
+      });
     }
 
-    return res.status(200).json({
-      status: "success",
-      message: deletedCount > 1
-        ? `Deleted ${deletedCount} bookings from the group successfully`
-        : "Booking deleted/cancelled successfully",
-    });
+    // ====== حذف حجز واحد ======
+    else {
+      const booking = await Booking.findById(id).lean();
+      if (!booking) {
+        return res.status(404).json({ status: "error", message: "Booking not found" });
+      }
+
+      // تحقق من صلاحيات الكوتش
+      if (role === "coach" && booking.coach.toString() !== user._id.toString()) {
+        return res.status(403).json({ status: "error", message: "Not authorized to delete this booking" });
+      }
+
+      // حذف جميع الميمبرز المرتبطين بهذا الحجز
+      await BookingMember.deleteMany({ booking: booking._id });
+
+      // حذف الحجز نفسه
+      await Booking.findByIdAndDelete(booking._id);
+      deletedCount = 1;
+
+      return res.status(200).json({
+        status: "success",
+        message: "Booking and all related members deleted successfully",
+      });
+    }
 
   } catch (err) {
     next(err);
   }
 };
+
 
 
 export const filterBookings = async (req, res) => {

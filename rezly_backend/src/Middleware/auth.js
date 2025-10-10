@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 import userModel from "../../DB/models/user.model.js";
-import{ Employee }from "../../DB/models/employee.model.js";
-import { Role } from "../../DB/models/role.model.js";
-import { Permission } from "../../DB/models/permission.model.js";
+import { Employee } from "../../DB/models/employee.model.js";
+import Role from "../../DB/models/role.model.js";
+import Permission from "../../DB/models/permission.model.js";
 
 export const roles = {
   Admin: "admin",
@@ -73,13 +73,9 @@ export const auth = (allowedRoles = []) => {
 
       // 🔍 البحث في جدول الموظفين أولاً
       let user =
-        (await Employee.findById(decoded.id)
-          .select("username role")
-          .lean()) ||
+        (await Employee.findById(decoded.id).select("username role").lean()) ||
         // إذا مش موظف، يمكن يكون مشترك (Member)
-        (await userModel.findById(decoded.id)
-          .select("userName role")
-          .lean());
+        (await userModel.findById(decoded.id).select("userName role").lean());
 
       if (!user) {
         return res.status(401).json({
@@ -93,11 +89,9 @@ export const auth = (allowedRoles = []) => {
       req.userId = decoded.id;
 
       // تحديد اسم الدور
-      req.user.roleName = (
-        user.roleId?.name ||
-        user.role ||
-        ""
-      ).toString().toLowerCase();
+      req.user.roleName = (user.roleId?.name || user.role || "")
+        .toString()
+        .toLowerCase();
 
       // تحديد الصلاحيات (فقط للموظفين)
       req.user.permissions = (user.roleId?.permissions || []).map((p) =>
