@@ -143,7 +143,7 @@ export const employeeUpdateSchema = Joi.object({
   username: Joi.string().optional(),
   password: Joi.string().min(6).optional(),
   role: Joi.string()
-    .valid("Admin", "Coach", "accountant", "receptionist")
+    .valid("Admin", "Coach", "Accountant", "Receptionist")
     .optional(),
   notes: Joi.string().optional(),
 }).unknown(true); // يسمح بأي حقل إضافي مثل id بدون مشكلة
