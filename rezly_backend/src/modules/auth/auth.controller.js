@@ -128,17 +128,7 @@ export const getAllEmployees = async (req, res) => {
       query.role = role; // فلترة حسب الدور
     }
     console.log(query);
-    const employees = await Employee.find(query, {
-      firstName: 1,
-      lastName: 1,
-      phoneNumber: 1,
-      email: 1,
-      department: 1,
-      jobTitle: 1,
-      role: 1,
-      contractType: 1,
-      startDate: 1,
-    });
+   const employees = await Employee.find(query);
 
     const totalCount = employees.length;
 
