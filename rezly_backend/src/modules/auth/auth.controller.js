@@ -1,7 +1,6 @@
 import userModel from "../../../DB/models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { Role } from "../../../DB/models/role.model.js";
 import { AppError } from "../../../AppError.js";
 import { sendEmail } from "../../Utils/sendEmail.js";
 import { customAlphabet } from "nanoid";
@@ -12,8 +11,6 @@ import { Employee } from "../../../DB/models/employee.model.js";
 import Package from "../../../DB/models/packages.model.js";
 
 import crypto from "crypto";
-
-
 
 
 
