@@ -105,7 +105,7 @@ image: Joi.any().optional().strip(),
     "any.required": "القسم مطلوب",
   }),
   contractType: Joi.string()
-    .valid("دوام كامل", "دوام جزئي", "عقد مؤقت")
+    .valid("كامل", "جزئي", "مؤقت")
     .required()
     .messages({
       "any.only": "اختر نوع عقد صالح",
@@ -140,7 +140,7 @@ export const employeeUpdateSchema = Joi.object({
   address: Joi.string().optional(),
   jobTitle: Joi.string().optional(),
   department: Joi.string().optional(),
-  contractType: Joi.string().valid("دوام كامل","دوام جزئي","عقد مؤقت").optional(),
+  contractType: Joi.string().valid("كامل","جزئي","مؤقت").optional(),
   startDate: Joi.date().optional(),
   username: Joi.string().optional(),
   password: Joi.string().min(6).optional(),
