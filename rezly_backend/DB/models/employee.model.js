@@ -21,7 +21,7 @@ const employeeSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true }, 
   password: { type: String, required: true },           
   role: { type: String,
-       enum: ["Admin", "Coach", "accountant", "receptionist"],
+       enum: ["Admin", "Coach", "Accountant", "Receptionist"],
  required: true },
   notes: { type: String } ,
     confirmEmail: { type: Boolean, default: false },

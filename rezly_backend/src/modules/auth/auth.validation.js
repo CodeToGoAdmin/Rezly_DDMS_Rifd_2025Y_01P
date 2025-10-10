@@ -116,7 +116,7 @@ export const employeeSchema = Joi.object({
     "string.min": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
   }),
   role: Joi.string()
-    .valid("Admin", "Coach", "accountant", "receptionist")
+    .valid("Admin", "Coach", "Accountant", "Receptionist")
     .required()
     .messages({
       "any.only": "اختر دور صالح",
