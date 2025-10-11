@@ -148,8 +148,6 @@ export const employeeUpdateSchema = Joi.object({
   notes: Joi.string().optional(),
 }).unknown(true); // يسمح بأي حقل إضافي مثل id بدون مشكلة
 
-
-
 export const createMemberSchema = Joi.object({
   userName: Joi.string().min(4).max(20).required().messages({
     "string.empty": "اسم المستخدم مطلوب",

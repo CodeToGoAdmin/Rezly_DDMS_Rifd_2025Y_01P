@@ -18,7 +18,6 @@ router.post("/addNewMember", auth([ roles.Admin]), validation(schema.createMembe
 router.put("/updateMember/:id", auth([ roles.Admin]), validation(schema.updateMemberSchema), asyncHandler(authController.updateMember));
 router.get("/getAllMembers", auth([ roles.Admin]), asyncHandler(authController.getAllMembers));
 
-
 const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 ميجا كحد أقصى
